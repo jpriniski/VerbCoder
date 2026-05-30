@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verb Framing Labeler</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #222;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: #fff;
+    border-bottom: 1px solid #e4e4e4;
+    padding: 14px 28px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  header h1 { font-size: 17px; font-weight: 700; letter-spacing: -.3px; white-space: nowrap; }
+
+  .name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: center;
+  }
+  .name-wrap label { font-size: 13px; color: #777; white-space: nowrap; }
+  .name-wrap input {
+    border: 1.5px solid #d8d8d8;
+    border-radius: 7px;
+    padding: 7px 13px;
+    font-size: 14px;
+    width: 180px;
+    transition: border-color .15s;
+  }
+  .name-wrap input:focus { outline: none; border-color: #4a7eff; }
+
+  /* ── Progress ── */
+  .progress-track {
+    height: 5px;
+    background: #e2e2e2;
+  }
+  .progress-fill {
+    height: 5px;
+    background: linear-gradient(90deg, #4a7eff, #6fc6ff);
+    width: 0%;
+    transition: width .4s ease;
+  }
+  .progress-label {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    padding: 6px 0 2px;
+    letter-spacing: .02em;
+  }
+
+  /* ── Main card ── */
+  .main { max-width: 820px; margin: 28px auto; padding: 0 20px 60px; }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 44px 48px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  }
+
+  /* ── Verb display ── */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #aaa;
+    margin-bottom: 10px;
+  }
+  .verb {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    color: #111;
+    margin-bottom: 44px;
+    line-height: 1;
+  }
+
+  /* ── Section headings ── */
+  .section-head {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #888;
+    margin-bottom: 10px;
+    margin-top: 4px;
+  }
+
+  /* ── Pills ── */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+
+  .pill {
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 2px solid #e4e4e4;
+    background: #fafafa;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color .12s, background .12s, color .12s, transform .08s;
+    color: #444;
+    user-select: none;
+    line-height: 1.2;
+  }
+  .pill:hover { border-color: #bbb; background: #f2f2f2; transform: translateY(-1px); }
+  .pill:active { transform: translateY(0); }
+
+  /* Category selected states — use category brand colors */
+  .pill.cat-selected[data-cat="Anthropomorphic"]   { background:#C0392B; border-color:#C0392B; color:#fff; }
+  .pill.cat-selected[data-cat="Mechanistic"]        { background:#2C5F8A; border-color:#2C5F8A; color:#fff; }
+  .pill.cat-selected[data-cat="Labor Displacement"] { background:#7D3C98; border-color:#7D3C98; color:#fff; }
+  .pill.cat-selected[data-cat="Threat / Risk"]      { background:#E67E22; border-color:#E67E22; color:#fff; }
+  .pill.cat-selected[data-cat="Transformation"]     { background:#1A7A4A; border-color:#1A7A4A; color:#fff; }
+  .pill.cat-selected[data-cat="Governance"]         { background:#2E86AB; border-color:#2E86AB; color:#fff; }
+  .pill.cat-selected[data-cat="Epistemic Tool"]     { background:#5D6D7E; border-color:#5D6D7E; color:#fff; }
+
+  /* Subcluster selected state */
+  .pill.sub-selected { background:#1a1a2e; border-color:#1a1a2e; color:#fff; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid #f0f0f0; margin: 4px 0 28px; }
+
+  /* ── Submit ── */
+  .actions { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+  .submit-btn {
+    background: #4a7eff;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 12px 36px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, transform .08s;
+    letter-spacing: -.1px;
+  }
+  .submit-btn:hover:not(:disabled) { background: #2e64ff; transform: translateY(-1px); }
+  .submit-btn:active:not(:disabled) { transform: translateY(0); }
+  .submit-btn:disabled { background: #c8d0e0; cursor: not-allowed; }
+
+  .hint { font-size: 12px; color: #bbb; }
+
+  .err { color: #e74c3c; font-size: 13px; min-height: 18px; margin-top: 8px; }
+
+  /* ── Placeholder / complete ── */
+  .center-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .center-msg h2 { font-size: 30px; color: #333; margin-bottom: 10px; }
+  .center-msg p  { color: #777; }
+
+  /* ── Subcluster section ── */
+  .sub-section { overflow: hidden; }
+  .sub-placeholder {
+    font-size: 13px;
+    color: #bbb;
+    padding: 6px 0 28px;
+    font-style: italic;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 560px) {
+    .card { padding: 28px 20px; }
+    .verb { font-size: 38px; letter-spacing: -1px; }
+    header { grid-template-columns: 1fr; gap: 10px; }
+    .name-wrap { justify-self: start; }
+    .name-wrap input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Verb Framing Labeler</h1>
+  <div class="name-wrap">
+    <label for="username">Your name:</label>
+    <input id="username" type="text" placeholder="Enter name…" autocomplete="off" spellcheck="false">
+  </div>
+  <div></div><!-- grid spacer -->
+</header>
+
+<div class="progress-track">
+  <div class="progress-fill" id="progress-fill"></div>
+</div>
+<div class="progress-label" id="progress-label"></div>
+
+<div class="main">
+  <div class="card">
+
+    <!-- Idle: no name entered -->
+    <div class="center-msg" id="msg-idle">
+      <p>Enter your name above to begin labeling.</p>
+    </div>
+
+    <!-- Labeling UI -->
+    <div id="ui-label" style="display:none">
+      <div class="eyebrow">Rate this verb</div>
+      <div class="verb" id="verb-text">—</div>
+
+      <div class="section-head">Category</div>
+      <div class="pills" id="cat-pills"></div>
+
+      <hr class="divider">
+
+      <div class="sub-section">
+        <div class="section-head">Subcluster</div>
+        <div class="sub-placeholder" id="sub-placeholder">Select a category above to see its subclusters.</div>
+        <div class="pills" id="sub-pills" style="display:none"></div>
+      </div>
+
+      <div class="actions">
+        <button class="submit-btn" id="submit-btn" disabled>Submit →</button>
+        <span class="hint">or press Enter</span>
+      </div>
+      <div class="err" id="err-msg"></div>
+    </div>
+
+    <!-- Complete -->
+    <div class="center-msg" id="msg-complete" style="display:none">
+      <h2>All done!</h2>
+      <p id="complete-detail"></p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const usernameEl   = $('username');
+const progressFill = $('progress-fill');
+const progressLbl  = $('progress-label');
+const msgIdle      = $('msg-idle');
+const uiLabel      = $('ui-label');
+const msgComplete  = $('msg-complete');
+const verbEl       = $('verb-text');
+const catPillsEl   = $('cat-pills');
+const subPillsEl   = $('sub-pills');
+const subPlaceholder = $('sub-placeholder');
+const submitBtn    = $('submit-btn');
+const errMsg       = $('err-msg');
+
+let opts = null;          // { categories, category_subclusters, total }
+let currentVerb = null;
+let verbStartTime = null; // ms timestamp when current verb was displayed
+let selCat = null;
+let selSub = null;
+let debounce = null;
+
+// ── Persist name ──────────────────────────────────────────────────────────
+const saved = localStorage.getItem('vfl_name');
+if (saved) usernameEl.value = saved;
+
+// ── Load options once ─────────────────────────────────────────────────────
+async function loadOpts() {
+  const r = await fetch('/api/options');
+  opts = await r.json();
+  buildPills();
+}
+
+function buildPills() {
+  catPillsEl.innerHTML = '';
+
+  for (const cat of opts.categories) {
+    const p = makePill(cat);
+    p.dataset.cat = cat;
+    p.addEventListener('click', () => pickCat(cat, p));
+    catPillsEl.appendChild(p);
+  }
+}
+
+function buildSubPills(cat) {
+  subPillsEl.innerHTML = '';
+  const subs = opts.category_subclusters[cat] || [];
+  for (const sub of subs) {
+    const p = makePill(sub);
+    p.dataset.sub = sub;
+    p.addEventListener('click', () => pickSub(sub, p));
+    subPillsEl.appendChild(p);
+  }
+}
+
+function makePill(text) {
+  const b = document.createElement('button');
+  b.className = 'pill';
+  b.textContent = text;
+  return b;
+}
+
+function pickCat(cat, el) {
+  selCat = cat;
+  selSub = null;
+  catPillsEl.querySelectorAll('.pill').forEach(p => p.classList.remove('cat-selected'));
+  el.classList.add('cat-selected');
+
+  // Rebuild subcluster pills for this category and reveal them
+  buildSubPills(cat);
+  subPlaceholder.style.display = 'none';
+  subPillsEl.style.display = '';
+
+  checkReady();
+}
+
+function pickSub(sub, el) {
+  selSub = sub;
+  subPillsEl.querySelectorAll('.pill').forEach(p => p.classList.remove('sub-selected'));
+  el.classList.add('sub-selected');
+  checkReady();
+}
+
+function checkReady() {
+  submitBtn.disabled = !(selCat && selSub);
+}
+
+// ── Progress ──────────────────────────────────────────────────────────────
+function setProgress(done, total) {
+  const pct = total > 0 ? (done / total * 100) : 0;
+  progressFill.style.width = pct.toFixed(1) + '%';
+  progressLbl.textContent = `${done} / ${total} labeled`;
+}
+
+// ── Fetch next verb ───────────────────────────────────────────────────────
+async function fetchNext() {
+  const name = usernameEl.value.trim();
+  if (!name) return;
+
+  const r = await fetch('/api/next?user=' + encodeURIComponent(name));
+  const d = await r.json();
+
+  setProgress(d.done, d.total);
+
+  if (d.complete) {
+    show('complete');
+    $('complete-detail').textContent =
+      `You've rated all ${d.total} verbs. Thank you, ${name}!`;
+    return;
+  }
+
+  currentVerb = d.verb;
+  verbStartTime = Date.now();
+  verbEl.textContent = d.verb;
+  selCat = null;
+  selSub = null;
+  catPillsEl.querySelectorAll('.pill').forEach(p => p.classList.remove('cat-selected'));
+  subPillsEl.innerHTML = '';
+  subPillsEl.style.display = 'none';
+  subPlaceholder.style.display = '';
+  submitBtn.disabled = true;
+  errMsg.textContent = '';
+  show('label');
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────
+async function doSubmit() {
+  const name = usernameEl.value.trim();
+  if (!name) { errMsg.textContent = 'Please enter your name first.'; return; }
+  if (!selCat || !selSub) return;
+
+  submitBtn.disabled = true;
+
+  const r = await fetch('/api/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: name,
+      verb: currentVerb,
+      category: selCat,
+      subcluster: selSub,
+      response_time_ms: verbStartTime ? Date.now() - verbStartTime : null,
+    }),
+  });
+  const d = await r.json();
+
+  if (d.ok) {
+    await fetchNext();
+  } else {
+    errMsg.textContent = 'Error saving — please try again.';
+    submitBtn.disabled = false;
+  }
+}
+
+submitBtn.addEventListener('click', doSubmit);
+
+// ── Keyboard shortcut ─────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !submitBtn.disabled && document.activeElement !== usernameEl) {
+    doSubmit();
+  }
+});
+
+// ── Show / hide panels ────────────────────────────────────────────────────
+function show(panel) {
+  msgIdle.style.display     = panel === 'idle'     ? '' : 'none';
+  uiLabel.style.display     = panel === 'label'    ? '' : 'none';
+  msgComplete.style.display = panel === 'complete' ? '' : 'none';
+}
+
+// ── Name input ────────────────────────────────────────────────────────────
+usernameEl.addEventListener('input', () => {
+  const name = usernameEl.value.trim();
+  localStorage.setItem('vfl_name', usernameEl.value);
+  clearTimeout(debounce);
+  debounce = setTimeout(() => {
+    if (name) fetchNext();
+    else { show('idle'); setProgress(0, opts ? opts.total : 0); }
+  }, 350);
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+(async () => {
+  await loadOpts();
+  if (usernameEl.value.trim()) {
+    await fetchNext();
+  } else {
+    show('idle');
+    setProgress(0, opts.total);
+  }
+})();
+</script>
+</body>
+</html>

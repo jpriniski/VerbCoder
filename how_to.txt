@@ -1,0 +1,149 @@
+================================================================================
+VERB FRAMING LABELER — RESEARCH ASSISTANT GUIDE
+================================================================================
+
+OVERVIEW
+--------
+This study examines how AI is described in news media. You will be shown one
+verb at a time and asked to classify it into a framing CATEGORY and SUBCLUSTER.
+
+Think about the verb in the context of a news headline about AI — for example,
+"AI [verb]s..." or "The algorithm [verb]s..." — and choose the category that
+best captures what kind of role AI is being portrayed as playing.
+
+There is no strict right or wrong answer. We are collecting human judgments
+to understand how these words are intuitively understood.
+
+HOW TO USE THE TOOL
+-------------------
+1. Enter your name in the header. It will be remembered across sessions.
+2. A verb appears on screen.
+3. Click one CATEGORY pill (7 options).
+4. Once a category is selected, click one SUBCLUSTER pill from the options
+   that appear (3–4 options depending on the category).
+5. Click Submit (or press Enter) to move to the next verb.
+6. You can stop and resume at any time — your progress is saved automatically.
+
+You are done when all 568 verbs have been labeled under your name.
+
+================================================================================
+CATEGORIES & SUBCLUSTERS
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+1. ANTHROPOMORPHIC
+   AI is framed as human-like — thinking, feeling, communicating, or choosing.
+   Example: "The chatbot BELIEVES it is helping users."
+
+   Subclusters:
+   · Cognition      — AI thinks, reasons, or understands.
+                      "The model REALIZES it made an error."
+   · Emotion        — AI feels, wants, or cares.
+                      "The AI FEARS it will be shut down."
+   · Communication  — AI says, explains, argues, or warns.
+                      "The assistant TELLS users to seek a doctor."
+   · Agency         — AI chooses, plans, refuses, or acts intentionally.
+                      "The system REFUSES to answer the question."
+
+────────────────────────────────────────────────────────────────────────────────
+2. MECHANISTIC
+   AI is framed as a technical system performing computational operations.
+   Example: "The algorithm PROCESSES thousands of images per second."
+
+   Subclusters:
+   · Data Ops         — AI handles, filters, or transforms data inputs.
+                        "The model TOKENIZES the text before analysis."
+   · Model Lifecycle  — AI is trained, deployed, evaluated, or updated.
+                        "Researchers FINE-TUNE the model on medical records."
+   · Output Transform — AI converts, produces, or restructures outputs.
+                        "The system TRANSCRIBES audio into written text."
+
+────────────────────────────────────────────────────────────────────────────────
+3. LABOR DISPLACEMENT
+   AI is framed in terms of its impact on human workers and the economy.
+   Example: "AI is REPLACING entry-level programmers."
+
+   Subclusters:
+   · Replacement    — AI eliminates or takes over jobs from humans.
+                      "The software AUTOMATES tasks once done by paralegals."
+   · Augmentation   — AI assists or enhances what workers can do.
+                      "AI EMPOWERS radiologists to review more scans daily."
+   · Performance    — AI outperforms, matches, or beats human benchmarks.
+                      "The model SURPASSES expert-level performance on the bar exam."
+   · Labor Market   — AI broadly shifts hiring, demand, or job structures.
+                      "Automation is RESHAPING the manufacturing labor market."
+
+────────────────────────────────────────────────────────────────────────────────
+4. THREAT / RISK
+   AI is framed as harmful, dangerous, or a source of risk.
+   Example: "The deepfake tool DECEIVES voters ahead of the election."
+
+   Subclusters:
+   · Direct Harm    — AI causes tangible injury to people or institutions.
+                      "The autonomous weapon TARGETS civilians."
+   · Deception      — AI misleads, fabricates, or manipulates.
+                      "The chatbot HALLUCINATES medical advice."
+   · Systemic Harm  — AI entrenches inequality or erodes social structures.
+                      "Facial recognition DISCRIMINATES against minority groups."
+   · Risk Framing   — AI poses, raises, or amplifies abstract risk.
+                      "Experts warn that AGI POSES an existential threat."
+
+────────────────────────────────────────────────────────────────────────────────
+5. TRANSFORMATION
+   AI is framed as driving broad change, progress, or new possibilities.
+   Example: "AI is REVOLUTIONIZING how doctors diagnose disease."
+
+   Subclusters:
+   · Sweeping Change — AI fundamentally reshapes or disrupts entire domains.
+                       "Generative AI is REDEFINING creative industries."
+   · Enablement      — AI unlocks, opens up, or makes things newly possible.
+                       "The tool DEMOCRATIZES access to legal advice."
+   · Scale / Speed   — AI accelerates, multiplies, or amplifies capacity.
+                       "AI SUPERCHARGES drug discovery timelines."
+   · Improvement     — AI upgrades, strengthens, or enriches existing things.
+                       "The new model ENRICHES personalized learning experiences."
+
+────────────────────────────────────────────────────────────────────────────────
+6. GOVERNANCE
+   AI is framed as something that is regulated, overseen, or managed by
+   institutions, policies, or rules.
+   Example: "The EU will REGULATE AI systems used in hiring."
+
+   Subclusters:
+   · Regulation    — AI is subject to laws, bans, licensing, or compliance.
+                     "Congress moves to BAN AI-generated political ads."
+   · Oversight     — AI is monitored, audited, or reviewed for accountability.
+                     "Regulators will AUDIT the algorithm for bias."
+   · Policy        — AI is managed, guided, or constrained through governance.
+                     "The White House aims to ALIGN AI with democratic values."
+   · Deliberation  — Stakeholders consult, negotiate, or recommend on AI.
+                     "Tech companies ENGAGE policymakers on safety standards."
+
+────────────────────────────────────────────────────────────────────────────────
+7. EPISTEMIC TOOL
+   AI is framed as an instrument for producing knowledge or understanding.
+   Example: "AI IDENTIFIES cancer markers in MRI scans."
+
+   Subclusters:
+   · Discovery    — AI finds, reveals, or surfaces hidden patterns or facts.
+                    "The model UNCOVERS new drug candidates from research data."
+   · Analysis     — AI examines, investigates, or interprets information.
+                    "Researchers use AI to ANALYZE millions of social media posts."
+   · Verification — AI confirms, validates, or challenges claims.
+                    "The tool CHECKS whether a news article contains misinformation."
+   · Prediction   — AI forecasts, estimates, or models future outcomes.
+                    "The algorithm PREDICTS patient readmission risk within 30 days."
+
+================================================================================
+TIPS
+================================================================================
+· Go with your gut — your first instinct is usually the right one.
+· Choose the category that fits how the verb makes AI sound, not what AI
+  technically does under the hood.
+· If a verb could fit multiple categories, pick the one that feels most
+  natural given how a journalist might use it.
+· Response time is recorded, so try to work at a steady pace rather than
+  deliberating too long on any single item.
+· Contact the research team if you have questions.
+
+================================================================================
