@@ -1,0 +1,569 @@
+category_label,subcluster_label,verb
+Anthropomorphic,Cognition,think
+Anthropomorphic,Cognition,know
+Anthropomorphic,Cognition,understand
+Anthropomorphic,Cognition,believe
+Anthropomorphic,Cognition,learn
+Anthropomorphic,Cognition,remember
+Anthropomorphic,Cognition,decide
+Anthropomorphic,Cognition,reason
+Anthropomorphic,Cognition,perceive
+Anthropomorphic,Cognition,recognize
+Anthropomorphic,Cognition,assume
+Anthropomorphic,Cognition,infer
+Anthropomorphic,Cognition,conclude
+Anthropomorphic,Cognition,realize
+Anthropomorphic,Cognition,consider
+Anthropomorphic,Cognition,expect
+Anthropomorphic,Cognition,suppose
+Anthropomorphic,Cognition,wonder
+Anthropomorphic,Cognition,conceptualize
+Anthropomorphic,Cognition,theorize
+Anthropomorphic,Cognition,hypothesize
+Anthropomorphic,Cognition,rationalize
+Anthropomorphic,Cognition,contemplate
+Anthropomorphic,Cognition,reflect
+Anthropomorphic,Cognition,interpret
+Anthropomorphic,Cognition,judge
+Anthropomorphic,Cognition,assess
+Anthropomorphic,Cognition,grasp
+Anthropomorphic,Cognition,deduce
+Anthropomorphic,Cognition,anticipate
+Anthropomorphic,Cognition,speculate
+Anthropomorphic,Cognition,discern
+Anthropomorphic,Cognition,envision
+Anthropomorphic,Cognition,comprehend
+Anthropomorphic,Cognition,deliberate
+Anthropomorphic,Cognition,weigh
+Anthropomorphic,Cognition,reconsider
+Anthropomorphic,Emotion,feel
+Anthropomorphic,Emotion,want
+Anthropomorphic,Emotion,desire
+Anthropomorphic,Emotion,fear
+Anthropomorphic,Emotion,love
+Anthropomorphic,Emotion,hate
+Anthropomorphic,Emotion,hope
+Anthropomorphic,Emotion,worry
+Anthropomorphic,Emotion,care
+Anthropomorphic,Emotion,enjoy
+Anthropomorphic,Emotion,prefer
+Anthropomorphic,Emotion,wish
+Anthropomorphic,Emotion,dread
+Anthropomorphic,Emotion,value
+Anthropomorphic,Emotion,trust
+Anthropomorphic,Emotion,doubt
+Anthropomorphic,Emotion,resent
+Anthropomorphic,Emotion,appreciate
+Anthropomorphic,Emotion,regret
+Anthropomorphic,Emotion,empathize
+Anthropomorphic,Emotion,sympathize
+Anthropomorphic,Emotion,crave
+Anthropomorphic,Emotion,embrace
+Anthropomorphic,Emotion,resist
+Anthropomorphic,Communication,say
+Anthropomorphic,Communication,tell
+Anthropomorphic,Communication,ask
+Anthropomorphic,Communication,explain
+Anthropomorphic,Communication,argue
+Anthropomorphic,Communication,claim
+Anthropomorphic,Communication,respond
+Anthropomorphic,Communication,reply
+Anthropomorphic,Communication,suggest
+Anthropomorphic,Communication,warn
+Anthropomorphic,Communication,admit
+Anthropomorphic,Communication,insist
+Anthropomorphic,Communication,state
+Anthropomorphic,Communication,assert
+Anthropomorphic,Communication,announce
+Anthropomorphic,Communication,describe
+Anthropomorphic,Communication,report
+Anthropomorphic,Communication,note
+Anthropomorphic,Communication,mention
+Anthropomorphic,Communication,deny
+Anthropomorphic,Communication,communicate
+Anthropomorphic,Communication,express
+Anthropomorphic,Communication,articulate
+Anthropomorphic,Communication,convey
+Anthropomorphic,Communication,advise
+Anthropomorphic,Communication,propose
+Anthropomorphic,Communication,question
+Anthropomorphic,Communication,challenge
+Anthropomorphic,Communication,emphasize
+Anthropomorphic,Communication,acknowledge
+Anthropomorphic,Communication,declare
+Anthropomorphic,Communication,confirm
+Anthropomorphic,Communication,justify
+Anthropomorphic,Communication,clarify
+Anthropomorphic,Communication,caution
+Anthropomorphic,Communication,recommend
+Anthropomorphic,Communication,elaborate
+Anthropomorphic,Communication,narrate
+Anthropomorphic,Communication,talk
+Anthropomorphic,Communication,write
+Anthropomorphic,Communication,discuss
+Anthropomorphic,Communication,present
+Anthropomorphic,Communication,offer
+Anthropomorphic,Communication,give
+Anthropomorphic,Communication,provide
+Anthropomorphic,Communication,promise
+Anthropomorphic,Communication,mean
+Anthropomorphic,Agency,choose
+Anthropomorphic,Agency,create
+Anthropomorphic,Agency,imagine
+Anthropomorphic,Agency,invent
+Anthropomorphic,Agency,try
+Anthropomorphic,Agency,help
+Anthropomorphic,Agency,refuse
+Anthropomorphic,Agency,struggle
+Anthropomorphic,Agency,attempt
+Anthropomorphic,Agency,intend
+Anthropomorphic,Agency,seek
+Anthropomorphic,Agency,plan
+Anthropomorphic,Agency,aim
+Anthropomorphic,Agency,strive
+Anthropomorphic,Agency,pursue
+Anthropomorphic,Agency,act
+Anthropomorphic,Agency,behave
+Anthropomorphic,Agency,operate
+Anthropomorphic,Agency,initiate
+Anthropomorphic,Agency,collaborate
+Anthropomorphic,Agency,adapt
+Anthropomorphic,Agency,navigate
+Anthropomorphic,Agency,innovate
+Anthropomorphic,Agency,explore
+Anthropomorphic,Agency,engage
+Anthropomorphic,Agency,interact
+Anthropomorphic,Agency,determine
+Anthropomorphic,Agency,prioritize
+Anthropomorphic,Agency,commit
+Anthropomorphic,Agency,resolve
+Anthropomorphic,Agency,devise
+Anthropomorphic,Agency,continue
+Mechanistic,Data Ops,process
+Mechanistic,Data Ops,output
+Mechanistic,Data Ops,compute
+Mechanistic,Data Ops,calculate
+Mechanistic,Data Ops,predict
+Mechanistic,Data Ops,classify
+Mechanistic,Data Ops,generate
+Mechanistic,Data Ops,run
+Mechanistic,Data Ops,execute
+Mechanistic,Data Ops,perform
+Mechanistic,Data Ops,detect
+Mechanistic,Data Ops,identify
+Mechanistic,Data Ops,search
+Mechanistic,Data Ops,retrieve
+Mechanistic,Data Ops,rank
+Mechanistic,Data Ops,filter
+Mechanistic,Data Ops,cluster
+Mechanistic,Data Ops,tokenize
+Mechanistic,Data Ops,encode
+Mechanistic,Data Ops,parse
+Mechanistic,Data Ops,scan
+Mechanistic,Data Ops,index
+Mechanistic,Data Ops,sample
+Mechanistic,Data Ops,extract
+Mechanistic,Data Ops,transform
+Mechanistic,Data Ops,aggregate
+Mechanistic,Data Ops,compress
+Mechanistic,Data Ops,decompose
+Mechanistic,Data Ops,normalize
+Mechanistic,Data Ops,quantify
+Mechanistic,Data Ops,query
+Mechanistic,Data Ops,map
+Mechanistic,Data Ops,sort
+Mechanistic,Data Ops,merge
+Mechanistic,Data Ops,split
+Mechanistic,Data Ops,chunk
+Mechanistic,Data Ops,batch
+Mechanistic,Data Ops,stream
+Mechanistic,Data Ops,buffer
+Mechanistic,Data Ops,cache
+Mechanistic,Data Ops,log
+Mechanistic,Data Ops,flag
+Mechanistic,Data Ops,tag
+Mechanistic,Data Ops,label
+Mechanistic,Data Ops,combine
+Mechanistic,Data Ops,use
+Mechanistic,Data Ops,work
+Mechanistic,Model Lifecycle,train
+Mechanistic,Model Lifecycle,optimize
+Mechanistic,Model Lifecycle,calibrate
+Mechanistic,Model Lifecycle,finetune
+Mechanistic,Model Lifecycle,evaluate
+Mechanistic,Model Lifecycle,benchmark
+Mechanistic,Model Lifecycle,deploy
+Mechanistic,Model Lifecycle,preprocess
+Mechanistic,Model Lifecycle,simulate
+Mechanistic,Model Lifecycle,model
+Mechanistic,Model Lifecycle,measure
+Mechanistic,Model Lifecycle,embed
+Mechanistic,Model Lifecycle,vectorize
+Mechanistic,Model Lifecycle,ingest
+Mechanistic,Model Lifecycle,retrain
+Mechanistic,Model Lifecycle,initialize
+Mechanistic,Model Lifecycle,regularize
+Mechanistic,Model Lifecycle,converge
+Mechanistic,Model Lifecycle,overfit
+Mechanistic,Model Lifecycle,prune
+Mechanistic,Model Lifecycle,distill
+Mechanistic,Model Lifecycle,checkpoint
+Mechanistic,Model Lifecycle,validate
+Mechanistic,Model Lifecycle,test
+Mechanistic,Model Lifecycle,develop
+Mechanistic,Output Transform,replicate
+Mechanistic,Output Transform,reduce
+Mechanistic,Output Transform,produce
+Mechanistic,Output Transform,scale
+Mechanistic,Output Transform,amplify
+Mechanistic,Output Transform,synthesize
+Mechanistic,Output Transform,approximate
+Mechanistic,Output Transform,interpolate
+Mechanistic,Output Transform,extrapolate
+Mechanistic,Output Transform,reconstruct
+Mechanistic,Output Transform,translate
+Mechanistic,Output Transform,transcribe
+Mechanistic,Output Transform,summarize
+Mechanistic,Output Transform,denoise
+Mechanistic,Output Transform,segment
+Labor Displacement,Replacement,replace
+Labor Displacement,Replacement,substitute
+Labor Displacement,Replacement,automate
+Labor Displacement,Replacement,eliminate
+Labor Displacement,Replacement,displace
+Labor Displacement,Replacement,outsource
+Labor Displacement,Replacement,deskill
+Labor Displacement,Replacement,commodify
+Labor Displacement,Replacement,undercut
+Labor Displacement,Replacement,devalue
+Labor Displacement,Replacement,obsolete
+Labor Displacement,Replacement,supplant
+Labor Displacement,Replacement,cut
+Labor Displacement,Replacement,downsize
+Labor Displacement,Replacement,restructure
+Labor Displacement,Replacement,offshore
+Labor Displacement,Replacement,hollow
+Labor Displacement,Replacement,shed
+Labor Displacement,Augmentation,complement
+Labor Displacement,Augmentation,augment
+Labor Displacement,Augmentation,assist
+Labor Displacement,Augmentation,support
+Labor Displacement,Augmentation,empower
+Labor Displacement,Augmentation,supercharge
+Labor Displacement,Augmentation,upskill
+Labor Displacement,Augmentation,reskill
+Labor Displacement,Augmentation,retrain
+Labor Displacement,Augmentation,redeploy
+Labor Displacement,Augmentation,enhance
+Labor Displacement,Augmentation,extend
+Labor Displacement,Augmentation,offload
+Labor Displacement,Augmentation,delegate
+Labor Displacement,Augmentation,leverage
+Labor Displacement,Augmentation,boost
+Labor Displacement,Performance,outperform
+Labor Displacement,Performance,surpass
+Labor Displacement,Performance,exceed
+Labor Displacement,Performance,beat
+Labor Displacement,Performance,halve
+Labor Displacement,Performance,triple
+Labor Displacement,Performance,streamline
+Labor Displacement,Performance,match
+Labor Displacement,Performance,rival
+Labor Displacement,Performance,equip
+Labor Displacement,Performance,deliver
+Labor Displacement,Performance,improve
+Labor Displacement,Performance,maximize
+Labor Displacement,Performance,optimize
+Labor Displacement,Performance,save
+Labor Displacement,Performance,increase
+Labor Displacement,Performance,achieve
+Labor Displacement,Labor Market,hire
+Labor Displacement,Labor Market,fire
+Labor Displacement,Labor Market,disrupt
+Labor Displacement,Labor Market,shift
+Labor Displacement,Labor Market,affect
+Labor Displacement,Labor Market,impact
+Labor Displacement,Labor Market,threaten
+Labor Displacement,Labor Market,benefit
+Labor Displacement,Labor Market,reward
+Labor Displacement,Labor Market,penalize
+Labor Displacement,Labor Market,stratify
+Labor Displacement,Labor Market,create
+Labor Displacement,Labor Market,destroy
+Labor Displacement,Labor Market,transform
+Labor Displacement,Labor Market,reshape
+Threat / Risk,Direct Harm,destroy
+Threat / Risk,Direct Harm,damage
+Threat / Risk,Direct Harm,harm
+Threat / Risk,Direct Harm,hurt
+Threat / Risk,Direct Harm,endanger
+Threat / Risk,Direct Harm,destabilize
+Threat / Risk,Direct Harm,kill
+Threat / Risk,Direct Harm,attack
+Threat / Risk,Direct Harm,target
+Threat / Risk,Direct Harm,exploit
+Threat / Risk,Direct Harm,violate
+Threat / Risk,Direct Harm,abuse
+Threat / Risk,Direct Harm,punish
+Threat / Risk,Direct Harm,coerce
+Threat / Risk,Direct Harm,oppress
+Threat / Risk,Direct Harm,surveil
+Threat / Risk,Direct Harm,stalk
+Threat / Risk,Direct Harm,threaten
+Threat / Risk,Direct Harm,injure
+Threat / Risk,Direct Harm,poison
+Threat / Risk,Deception,deceive
+Threat / Risk,Deception,manipulate
+Threat / Risk,Deception,mislead
+Threat / Risk,Deception,lie
+Threat / Risk,Deception,hallucinate
+Threat / Risk,Deception,misinform
+Threat / Risk,Deception,fabricate
+Threat / Risk,Deception,distort
+Threat / Risk,Deception,confuse
+Threat / Risk,Deception,trick
+Threat / Risk,Deception,impersonate
+Threat / Risk,Deception,spoof
+Threat / Risk,Deception,fake
+Threat / Risk,Deception,bias
+Threat / Risk,Deception,exaggerate
+Threat / Risk,Deception,deny
+Threat / Risk,Deception,conceal
+Threat / Risk,Deception,obscure
+Threat / Risk,Deception,suppress
+Threat / Risk,Deception,spin
+Threat / Risk,Systemic Harm,discriminate
+Threat / Risk,Systemic Harm,entrench
+Threat / Risk,Systemic Harm,concentrate
+Threat / Risk,Systemic Harm,exacerbate
+Threat / Risk,Systemic Harm,worsen
+Threat / Risk,Systemic Harm,erode
+Threat / Risk,Systemic Harm,undermine
+Threat / Risk,Systemic Harm,corrode
+Threat / Risk,Systemic Harm,degrade
+Threat / Risk,Systemic Harm,pollute
+Threat / Risk,Systemic Harm,corrupt
+Threat / Risk,Systemic Harm,censor
+Threat / Risk,Systemic Harm,invade
+Threat / Risk,Systemic Harm,expose
+Threat / Risk,Systemic Harm,misalign
+Threat / Risk,Systemic Harm,weaponize
+Threat / Risk,Systemic Harm,hack
+Threat / Risk,Systemic Harm,steal
+Threat / Risk,Risk Framing,pose
+Threat / Risk,Risk Framing,raise
+Threat / Risk,Risk Framing,amplify
+Threat / Risk,Risk Framing,spread
+Threat / Risk,Risk Framing,accelerate
+Threat / Risk,Risk Framing,enable
+Threat / Risk,Risk Framing,generate
+Threat / Risk,Risk Framing,fuel
+Threat / Risk,Risk Framing,hollow
+Threat / Risk,Risk Framing,disrupt
+Threat / Risk,Risk Framing,cause
+Transformation,Sweeping Change,revolutionize
+Transformation,Sweeping Change,reshape
+Transformation,Sweeping Change,redefine
+Transformation,Sweeping Change,transform
+Transformation,Sweeping Change,overhaul
+Transformation,Sweeping Change,remake
+Transformation,Sweeping Change,reinvent
+Transformation,Sweeping Change,reimagine
+Transformation,Sweeping Change,disrupt
+Transformation,Sweeping Change,upend
+Transformation,Sweeping Change,overturn
+Transformation,Sweeping Change,shatter
+Transformation,Sweeping Change,break
+Transformation,Sweeping Change,shift
+Transformation,Sweeping Change,alter
+Transformation,Sweeping Change,change
+Transformation,Sweeping Change,evolve
+Transformation,Sweeping Change,progress
+Transformation,Sweeping Change,advance
+Transformation,Sweeping Change,move
+Transformation,Sweeping Change,become
+Transformation,Sweeping Change,shape
+Transformation,Sweeping Change,lead
+Transformation,Sweeping Change,enter
+Transformation,Enablement,unlock
+Transformation,Enablement,elevate
+Transformation,Enablement,enhance
+Transformation,Enablement,enable
+Transformation,Enablement,democratize
+Transformation,Enablement,expand
+Transformation,Enablement,open
+Transformation,Enablement,usher
+Transformation,Enablement,herald
+Transformation,Enablement,propel
+Transformation,Enablement,catalyze
+Transformation,Enablement,modernize
+Transformation,Enablement,pioneer
+Transformation,Enablement,ignite
+Transformation,Enablement,spark
+Transformation,Enablement,drive
+Transformation,Enablement,fuel
+Transformation,Enablement,energize
+Transformation,Enablement,boost
+Transformation,Enablement,allow
+Transformation,Enablement,bring
+Transformation,Enablement,launch
+Transformation,Scale / Speed,accelerate
+Transformation,Scale / Speed,compress
+Transformation,Scale / Speed,multiply
+Transformation,Scale / Speed,scale
+Transformation,Scale / Speed,amplify
+Transformation,Scale / Speed,supercharge
+Transformation,Scale / Speed,turbocharge
+Transformation,Scale / Speed,streamline
+Transformation,Scale / Speed,expedite
+Transformation,Scale / Speed,hasten
+Transformation,Improvement,improve
+Transformation,Improvement,upgrade
+Transformation,Improvement,revitalize
+Transformation,Improvement,enrich
+Transformation,Improvement,strengthen
+Transformation,Improvement,empower
+Transformation,Improvement,liberate
+Transformation,Improvement,equalize
+Transformation,Improvement,broaden
+Transformation,Improvement,deepen
+Transformation,Improvement,grow
+Transformation,Improvement,build
+Transformation,Improvement,create
+Transformation,Improvement,produce
+Transformation,Improvement,generate
+Transformation,Improvement,serve
+Governance,Regulation,regulate
+Governance,Regulation,legislate
+Governance,Regulation,mandate
+Governance,Regulation,prohibit
+Governance,Regulation,ban
+Governance,Regulation,restrict
+Governance,Regulation,permit
+Governance,Regulation,license
+Governance,Regulation,certify
+Governance,Regulation,accredit
+Governance,Regulation,enforce
+Governance,Regulation,penalize
+Governance,Regulation,sanction
+Governance,Regulation,comply
+Governance,Regulation,adhere
+Governance,Regulation,conform
+Governance,Regulation,codify
+Governance,Regulation,standardize
+Governance,Regulation,formalize
+Governance,Regulation,ratify
+Governance,Oversight,govern
+Governance,Oversight,oversee
+Governance,Oversight,audit
+Governance,Oversight,monitor
+Governance,Oversight,inspect
+Governance,Oversight,review
+Governance,Oversight,assess
+Governance,Oversight,scrutinize
+Governance,Oversight,investigate
+Governance,Oversight,track
+Governance,Oversight,log
+Governance,Oversight,report
+Governance,Oversight,disclose
+Governance,Oversight,document
+Governance,Oversight,flag
+Governance,Oversight,alert
+Governance,Oversight,detect
+Governance,Oversight,verify
+Governance,Oversight,validate
+Governance,Policy,align
+Governance,Policy,control
+Governance,Policy,guide
+Governance,Policy,design
+Governance,Policy,implement
+Governance,Policy,adopt
+Governance,Policy,integrate
+Governance,Policy,coordinate
+Governance,Policy,administer
+Governance,Policy,manage
+Governance,Policy,constrain
+Governance,Policy,limit
+Governance,Policy,safeguard
+Governance,Policy,protect
+Governance,Policy,prevent
+Governance,Policy,mitigate
+Governance,Policy,incentivize
+Governance,Policy,require
+Governance,Policy,ensure
+Governance,Policy,balance
+Governance,Deliberation,consult
+Governance,Deliberation,engage
+Governance,Deliberation,negotiate
+Governance,Deliberation,deliberate
+Governance,Deliberation,recommend
+Epistemic Tool,Discovery,find
+Epistemic Tool,Discovery,discover
+Epistemic Tool,Discovery,uncover
+Epistemic Tool,Discovery,reveal
+Epistemic Tool,Discovery,expose
+Epistemic Tool,Discovery,illuminate
+Epistemic Tool,Discovery,surface
+Epistemic Tool,Discovery,identify
+Epistemic Tool,Discovery,detect
+Epistemic Tool,Discovery,spot
+Epistemic Tool,Discovery,locate
+Epistemic Tool,Discovery,flag
+Epistemic Tool,Discovery,pinpoint
+Epistemic Tool,Discovery,isolate
+Epistemic Tool,Discovery,extract
+Epistemic Tool,Discovery,map
+Epistemic Tool,Discovery,trace
+Epistemic Tool,Discovery,track
+Epistemic Tool,Discovery,chart
+Epistemic Tool,Discovery,profile
+Epistemic Tool,Discovery,teach
+Epistemic Tool,Analysis,analyze
+Epistemic Tool,Analysis,examine
+Epistemic Tool,Analysis,investigate
+Epistemic Tool,Analysis,probe
+Epistemic Tool,Analysis,study
+Epistemic Tool,Analysis,research
+Epistemic Tool,Analysis,explore
+Epistemic Tool,Analysis,interrogate
+Epistemic Tool,Analysis,test
+Epistemic Tool,Analysis,audit
+Epistemic Tool,Analysis,compare
+Epistemic Tool,Analysis,contrast
+Epistemic Tool,Analysis,benchmark
+Epistemic Tool,Analysis,evaluate
+Epistemic Tool,Analysis,interpret
+Epistemic Tool,Analysis,infer
+Epistemic Tool,Analysis,deduce
+Epistemic Tool,Analysis,reason
+Epistemic Tool,Analysis,classify
+Epistemic Tool,Verification,verify
+Epistemic Tool,Verification,confirm
+Epistemic Tool,Verification,validate
+Epistemic Tool,Verification,prove
+Epistemic Tool,Verification,demonstrate
+Epistemic Tool,Verification,show
+Epistemic Tool,Verification,establish
+Epistemic Tool,Verification,support
+Epistemic Tool,Verification,refute
+Epistemic Tool,Verification,challenge
+Epistemic Tool,Verification,question
+Epistemic Tool,Verification,check
+Epistemic Tool,Verification,replicate
+Epistemic Tool,Verification,reproduce
+Epistemic Tool,Prediction,predict
+Epistemic Tool,Prediction,forecast
+Epistemic Tool,Prediction,model
+Epistemic Tool,Prediction,simulate
+Epistemic Tool,Prediction,project
+Epistemic Tool,Prediction,estimate
+Epistemic Tool,Prediction,quantify
+Epistemic Tool,Prediction,measure
+Epistemic Tool,Prediction,calculate
+Epistemic Tool,Prediction,solve
+Epistemic Tool,Prediction,diagnose
+Epistemic Tool,Prediction,clarify
+Epistemic Tool,Prediction,pattern
+Epistemic Tool,Prediction,synthesize
+Epistemic Tool,Prediction,summarize
+Epistemic Tool,Prediction,play
