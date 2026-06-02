@@ -14,7 +14,7 @@ VERBS_FILE = BASE_DIR / "verb_framing_keywords.csv"
 
 
 def get_db():
-    return psycopg2.connect(os.environ["POSTGRES_URL"])
+    return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
 def init_db():
