@@ -127,6 +127,47 @@ nav a.active { background: #eef2ff; color: #4a7eff; font-weight: 600; }
   padding: 2px 7px;
   border-radius: 999px;
 }
+
+/* ── Dim toggle (2D / 3D) ── */
+.dim-toggle {
+  display: flex;
+  background: #ebebeb;
+  border-radius: 7px;
+  padding: 3px;
+  gap: 2px;
+  margin-left: auto;
+}
+.dim-toggle button {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: #888;
+  transition: background .12s, color .12s;
+}
+.dim-toggle button.active {
+  background: #fff;
+  color: #222;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+}
+
+/* ── 3D canvas ── */
+#pca-canvas {
+  display: block;
+  width: 100%;
+  cursor: grab;
+  border-radius: 6px;
+}
+#pca-canvas:active { cursor: grabbing; }
+.drag-hint {
+  text-align: center;
+  font-size: 11px;
+  color: #ccc;
+  margin-top: 6px;
+}
 .sub {
   font-size: 12px;
   color: #aaa;
@@ -181,11 +222,25 @@ nav a.active { background: #eef2ff; color: #4a7eff; font-weight: 600; }
     <!-- PCA scatter (full width) -->
     <div class="chart-panel pca-panel">
       <div class="panel-head">
-        <h2>Label Posterior Space <span class="badge">PCA</span></h2>
-        <p class="sub">Each verb projected from its 7-dim DS posterior vector. Color = inferred category · Opacity = confidence · Size = rater count.</p>
+        <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <h2>Label Posterior Space <span class="badge">PCA</span></h2>
+            <p class="sub">Each verb projected from its 7-dim DS posterior. Color = inferred category · Opacity = confidence · Size = rater count.</p>
+          </div>
+          <div class="dim-toggle">
+            <button id="btn-2d" class="active">2D</button>
+            <button id="btn-3d">3D</button>
+          </div>
+        </div>
         <div class="legend" id="legend"></div>
       </div>
-      <div class="svg-wrap"><svg id="pca-svg"></svg></div>
+      <!-- 2D SVG view -->
+      <div id="pca-2d-wrap" class="svg-wrap"><svg id="pca-svg"></svg></div>
+      <!-- 3D canvas view -->
+      <div id="pca-3d-wrap" style="display:none">
+        <canvas id="pca-canvas" height="460"></canvas>
+        <p class="drag-hint">Drag to rotate</p>
+      </div>
     </div>
 
     <!-- Confidence strip -->
@@ -510,11 +565,194 @@ function moveTip(e) {
 }
 function hideTip() { ttEl.style.display = 'none'; }
 
+// ── 2D / 3D toggle ────────────────────────────────────────────────────────────
+let viewMode3 = '2d';
+document.getElementById('btn-2d').addEventListener('click', () => {
+  viewMode3 = '2d';
+  document.getElementById('btn-2d').classList.add('active');
+  document.getElementById('btn-3d').classList.remove('active');
+  document.getElementById('pca-2d-wrap').style.display = '';
+  document.getElementById('pca-3d-wrap').style.display = 'none';
+});
+document.getElementById('btn-3d').addEventListener('click', () => {
+  viewMode3 = '3d';
+  document.getElementById('btn-3d').classList.add('active');
+  document.getElementById('btn-2d').classList.remove('active');
+  document.getElementById('pca-2d-wrap').style.display = 'none';
+  document.getElementById('pca-3d-wrap').style.display = '';
+  if (data) draw3D();
+});
+
+// ── 3D rotation state ─────────────────────────────────────────────────────────
+const rot3 = { x: 0.38, y: -0.42 };
+const drag3 = { on: false, lx: 0, ly: 0 };
+
+function setupCanvas3D() {
+  const canvas = document.getElementById('pca-canvas');
+  canvas.addEventListener('mousedown',  e => { drag3.on = true; drag3.lx = e.clientX; drag3.ly = e.clientY; });
+  canvas.addEventListener('mousemove',  e => {
+    if (!drag3.on) { canvas3DTooltip(e); return; }
+    rot3.y += (e.clientX - drag3.lx) * 0.007;
+    rot3.x -= (e.clientY - drag3.ly) * 0.007;
+    rot3.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, rot3.x));
+    drag3.lx = e.clientX; drag3.ly = e.clientY;
+    draw3D();
+  });
+  canvas.addEventListener('mouseup',    () => drag3.on = false);
+  canvas.addEventListener('mouseleave', () => { drag3.on = false; hideTip(); });
+  canvas.addEventListener('touchstart', e => {
+    const t = e.touches[0]; drag3.on = true; drag3.lx = t.clientX; drag3.ly = t.clientY;
+  }, { passive: true });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    rot3.y += (t.clientX - drag3.lx) * 0.007;
+    rot3.x -= (t.clientY - drag3.ly) * 0.007;
+    rot3.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, rot3.x));
+    drag3.lx = t.clientX; drag3.ly = t.clientY;
+    draw3D();
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => drag3.on = false);
+}
+
+// ── 3D math helpers ───────────────────────────────────────────────────────────
+function rot3D(x, y, z) {
+  const cx = Math.cos(rot3.x), sx = Math.sin(rot3.x);
+  const cy = Math.cos(rot3.y), sy = Math.sin(rot3.y);
+  const y1 = cx*y - sx*z, z1 = sx*y + cx*z;
+  const x2 = cy*x + sy*z1, z2 = -sy*x + cy*z1;
+  return [x2, y1, z2];
+}
+
+// Project 3D Gaussian onto 2D view plane and get screen-space ellipse params
+// axes = [[lambda, [u0,u1,u2]], ...]
+function projectedEllipse(mu3, axes, sigma, scale, cx, cy) {
+  // Projected mean
+  const [mx, my] = rot3D(mu3[0], mu3[1], mu3[2]);
+  const scrMx = cx + mx * scale, scrMy = cy - my * scale;
+
+  // Projected covariance Σ_view = Σ_i λi * proj(ui) ⊗ proj(ui)
+  // where proj(ui) = [ui_x, ui_y] in view space (drop z after rotation)
+  let a = 0, b = 0, d = 0;
+  for (const [lam, u] of axes) {
+    const [ux, uy] = rot3D(u[0], u[1], u[2]);
+    a += lam * ux * ux;
+    b += lam * ux * uy;
+    d += lam * uy * uy;
+  }
+  // Σ_screen accounts for scale + y-flip: D=diag(scale,-scale)
+  // Σ_scr = D Σ_view D = [[s²a, -s²b],[-s²b, s²d]]
+  const s2 = scale * scale;
+  const A = s2*a, B = -s2*b, D2 = s2*d;
+
+  // 2×2 eigendecomposition
+  const tr = A + D2, det = A*D2 - B*B;
+  const disc = Math.sqrt(Math.max(0, tr*tr/4 - det));
+  const l1 = tr/2 + disc, l2 = tr/2 - disc;
+  if (l1 <= 0 || l2 <= 0) return null;
+
+  const angle = Math.atan2(B, l1 - A);
+  return { x: scrMx, y: scrMy, rx: sigma*Math.sqrt(l1), ry: sigma*Math.sqrt(l2), angle };
+}
+
+// ── Draw 3D scatter ───────────────────────────────────────────────────────────
+function draw3D() {
+  const canvas = document.getElementById('pca-canvas');
+  const W = canvas.offsetWidth || 900;
+  canvas.width  = W;
+  canvas.height = Math.round(W * 0.51);
+  const H  = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = W * 0.5, cy = H * 0.5;
+
+  // Scale: fit data in 42% of the shorter dimension
+  const allCoords = data.verbs.flatMap(v => [Math.abs(v.pca_x), Math.abs(v.pca_y), Math.abs(v.pca_z)]);
+  const maxVal = Math.max(...allCoords) || 1;
+  const scale = (Math.min(W, H) * 0.42) / maxVal;
+
+  // ── Axes ──
+  const axLen = maxVal * 0.55;
+  const axDefs = [
+    { vec: [axLen, 0, 0], label: `PC1 ${(data.pca_variance[0]*100).toFixed(1)}%`, col: '#d0d0d0' },
+    { vec: [0, axLen, 0], label: `PC2 ${(data.pca_variance[1]*100).toFixed(1)}%`, col: '#d0d0d0' },
+    { vec: [0, 0, axLen], label: `PC3 ${(data.pca_variance[2]*100).toFixed(1)}%`, col: '#d0d0d0' },
+  ];
+  ctx.lineWidth = 1;
+  for (const { vec, label, col } of axDefs) {
+    const [ex, ey] = rot3D(...vec);
+    const sx = cx + ex*scale, sy = cy - ey*scale;
+    ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
+    ctx.fillStyle = '#bbb'; ctx.font = '11px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(label, sx + (sx-cx)*0.15, sy + (sy-cy)*0.15 + 4);
+  }
+
+  // ── Density ellipses ──
+  if (data.density_3d) {
+    for (const [cat, params] of Object.entries(data.density_3d)) {
+      if (hidden.has(cat)) continue;
+      const col = CAT_COLORS[cat] || '#888';
+      for (const [sigma, alpha] of [[2, 0.06], [1, 0.14]]) {
+        const e = projectedEllipse(params.mu, params.axes, sigma, scale, cx, cy);
+        if (!e) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.rotate(e.angle);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, Math.max(e.rx, 1), Math.max(e.ry, 1), 0, 0, Math.PI*2);
+        ctx.fillStyle = col; ctx.globalAlpha = alpha; ctx.fill();
+        ctx.strokeStyle = col; ctx.globalAlpha = alpha * 1.8;
+        ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+
+  // ── Points (painter's sort by z-depth) ──
+  const sorted3 = data.verbs
+    .filter(v => !hidden.has(v.ds_label))
+    .map(v => { const [rx,ry,rz] = rot3D(v.pca_x, v.pca_y, v.pca_z); return {...v, rx, ry, rz}; })
+    .sort((a, b) => a.rz - b.rz);
+
+  for (const v of sorted3) {
+    const sx = cx + v.rx*scale + vjitter(v.verb,       5);
+    const sy = cy - v.ry*scale + vjitter(v.verb+'_y', 5);
+    const r  = v.n_raters === 1 ? 2 : v.n_raters === 2 ? 3 : 4;
+    ctx.globalAlpha = Math.max(0.15, v.confidence);
+    ctx.fillStyle = CAT_COLORS[v.ds_label] || '#888';
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Store for tooltip hit-test
+  canvas._pts3 = sorted3.map(v => ({
+    ...v,
+    sx: cx + v.rx*scale + vjitter(v.verb, 5),
+    sy: cy - v.ry*scale + vjitter(v.verb+'_y', 5),
+  }));
+}
+
+function canvas3DTooltip(e) {
+  const canvas = document.getElementById('pca-canvas');
+  if (!canvas._pts3) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const my = (e.clientY - rect.top)  * (canvas.height / rect.height);
+  let best = null, bestD = 18*18;
+  for (const v of canvas._pts3) {
+    const d = (v.sx-mx)**2 + (v.sy-my)**2;
+    if (d < bestD) { bestD = d; best = v; }
+  }
+  best ? tip(e, best) : hideTip();
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 load().catch(err => {
   document.getElementById('loading').innerHTML =
     `<p style="color:#e74c3c">Failed to load: ${err.message}</p>`;
 });
+setupCanvas3D();
 </script>
 </body>
 </html>

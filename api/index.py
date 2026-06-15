@@ -277,12 +277,12 @@ def charts_data():
     predicted = np.argmax(T, axis=1)
     confidence = T.max(axis=1)
 
-    # PCA on DS posteriors
+    # PCA on DS posteriors (3 components)
     V_centered = T - T.mean(axis=0)
     U, S, _ = np.linalg.svd(V_centered, full_matrices=False)
-    coords = U[:, :2] * S[:2]
+    coords = U[:, :3] * S[:3]
     total_var = float((S ** 2).sum())
-    pca_variance = [float(s ** 2) / total_var for s in S[:2]]
+    pca_variance = [float(s ** 2) / total_var for s in S[:3]]
 
     result = []
     for i, verb in enumerate(verbs):
@@ -295,6 +295,7 @@ def charts_data():
             "n_raters": sum(1 for r in rater_filter if r in verb_data[verb]),
             "pca_x": round(float(coords[i, 0]), 4),
             "pca_y": round(float(coords[i, 1]), 4),
+            "pca_z": round(float(coords[i, 2]), 4),
             "avg_response_ms": avg_ms,
         })
 
@@ -323,11 +324,37 @@ def charts_data():
         except Exception:
             pass
 
+    # 3D Gaussian parameters per category (eigenvectors + eigenvalues)
+    density_3d = {}
+    for k, cat in enumerate(cats):
+        mask = predicted == k
+        if mask.sum() < 4:
+            continue
+        pts3 = coords[mask, :3]
+        mu3 = pts3.mean(axis=0)
+        cov3 = np.cov(pts3.T)
+        try:
+            evals, evecs = np.linalg.eigh(cov3)
+            evals = np.maximum(evals, 0)
+            order = np.argsort(evals)[::-1]
+            evals, evecs = evals[order], evecs[:, order]
+            density_3d[cat] = {
+                "mu": [round(float(x), 4) for x in mu3],
+                "axes": [
+                    [round(float(evals[i]), 6),
+                     [round(float(evecs[j, i]), 4) for j in range(3)]]
+                    for i in range(3)
+                ],
+            }
+        except Exception:
+            pass
+
     return jsonify({
         "verbs": result,
         "categories": cats,
         "pca_variance": pca_variance,
         "density_ellipses": density_ellipses,
+        "density_3d": density_3d,
     })
 
 
