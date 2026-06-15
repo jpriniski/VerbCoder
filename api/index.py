@@ -228,6 +228,79 @@ def analysis_page():
     return render_template("analysis.html")
 
 
+@app.route("/charts")
+def charts_page():
+    return render_template("charts.html")
+
+
+@app.route("/api/charts-data")
+def charts_data():
+    rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
+
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                "SELECT username, verb, category_label, response_time_ms "
+                "FROM responses WHERE username = ANY(%s)",
+                (rater_filter,)
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    if not rows:
+        return jsonify({"verbs": [], "categories": [], "pca_variance": []})
+
+    verb_data = defaultdict(dict)
+    verb_times = defaultdict(list)
+    for r in rows:
+        verb_data[r["verb"]][r["username"]] = r["category_label"]
+        if r["response_time_ms"]:
+            verb_times[r["verb"]].append(int(r["response_time_ms"]))
+
+    cats = sorted(set(r["category_label"] for r in rows))
+    cat_idx = {c: i for i, c in enumerate(cats)}
+    verbs = sorted(verb_data.keys())
+    K = len(cats)
+    R = len(rater_filter)
+    rater_idx = {r: i for i, r in enumerate(rater_filter)}
+    N = len(verbs)
+
+    annotations = np.full((N, R), -1, dtype=int)
+    for i, verb in enumerate(verbs):
+        for rater, cat in verb_data[verb].items():
+            if rater in rater_idx:
+                annotations[i, rater_idx[rater]] = cat_idx[cat]
+
+    T, _p, _pi = _dawid_skene(annotations, K)
+    predicted = np.argmax(T, axis=1)
+    confidence = T.max(axis=1)
+
+    # PCA on DS posteriors
+    V_centered = T - T.mean(axis=0)
+    U, S, _ = np.linalg.svd(V_centered, full_matrices=False)
+    coords = U[:, :2] * S[:2]
+    total_var = float((S ** 2).sum())
+    pca_variance = [float(s ** 2) / total_var for s in S[:2]]
+
+    result = []
+    for i, verb in enumerate(verbs):
+        times = verb_times[verb]
+        avg_ms = int(np.median(times)) if times else None
+        result.append({
+            "verb": verb,
+            "ds_label": cats[int(predicted[i])],
+            "confidence": round(float(confidence[i]), 4),
+            "n_raters": sum(1 for r in rater_filter if r in verb_data[verb]),
+            "pca_x": round(float(coords[i, 0]), 4),
+            "pca_y": round(float(coords[i, 1]), 4),
+            "avg_response_ms": avg_ms,
+        })
+
+    return jsonify({"verbs": result, "categories": cats, "pca_variance": pca_variance})
+
+
 @app.route("/api/ds-results")
 def ds_results():
     rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
