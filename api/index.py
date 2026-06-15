@@ -298,7 +298,37 @@ def charts_data():
             "avg_response_ms": avg_ms,
         })
 
-    return jsonify({"verbs": result, "categories": cats, "pca_variance": pca_variance})
+    # Per-category Gaussian density ellipses (1σ and 2σ)
+    theta = np.linspace(0, 2 * np.pi, 80)
+    circle = np.array([np.cos(theta), np.sin(theta)])
+    density_ellipses = {}
+    for k, cat in enumerate(cats):
+        mask = predicted == k
+        if mask.sum() < 3:
+            continue
+        pts = coords[mask]
+        mu = pts.mean(axis=0)
+        cov = np.cov(pts.T) if pts.shape[0] > 1 else np.eye(2) * 1e-4
+        try:
+            evals, evecs = np.linalg.eigh(cov)
+            evals = np.maximum(evals, 0)
+            order = np.argsort(evals)[::-1]
+            evals, evecs = evals[order], evecs[:, order]
+            density_ellipses[cat] = {}
+            for sigma in [1, 2]:
+                ell = (evecs @ np.diag(np.sqrt(evals) * sigma) @ circle).T + mu
+                density_ellipses[cat][f"sigma{sigma}"] = [
+                    [round(float(p[0]), 4), round(float(p[1]), 4)] for p in ell
+                ]
+        except Exception:
+            pass
+
+    return jsonify({
+        "verbs": result,
+        "categories": cats,
+        "pca_variance": pca_variance,
+        "density_ellipses": density_ellipses,
+    })
 
 
 @app.route("/api/ds-results")
