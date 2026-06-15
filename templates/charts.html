@@ -660,33 +660,42 @@ function draw3D() {
   const canvas = document.getElementById('pca-canvas');
   const W = canvas.offsetWidth || 900;
   canvas.width  = W;
-  canvas.height = Math.round(W * 0.51);
+  canvas.height = Math.round(W * 0.58);
   const H  = canvas.height;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
 
   const cx = W * 0.5, cy = H * 0.5;
 
-  // Scale: fit data in 42% of the shorter dimension
-  const allCoords = data.verbs.flatMap(v => [Math.abs(v.pca_x), Math.abs(v.pca_y), Math.abs(v.pca_z)]);
-  const maxVal = Math.max(...allCoords) || 1;
-  const scale = (Math.min(W, H) * 0.42) / maxVal;
+  // Scale: use 95th-percentile 3D distance so outliers don't shrink the cluster
+  const dists = data.verbs
+    .map(v => Math.sqrt(v.pca_x**2 + v.pca_y**2 + v.pca_z**2))
+    .sort((a, b) => a - b);
+  const p95 = dists[Math.floor(dists.length * 0.95)] || 1;
+  const scale = (Math.min(W, H) * 0.62) / p95;
 
   // ── Axes ──
-  const axLen = maxVal * 0.55;
+  const axLen = p95 * 0.7;
   const axDefs = [
-    { vec: [axLen, 0, 0], label: `PC1 ${(data.pca_variance[0]*100).toFixed(1)}%`, col: '#d0d0d0' },
-    { vec: [0, axLen, 0], label: `PC2 ${(data.pca_variance[1]*100).toFixed(1)}%`, col: '#d0d0d0' },
-    { vec: [0, 0, axLen], label: `PC3 ${(data.pca_variance[2]*100).toFixed(1)}%`, col: '#d0d0d0' },
+    { vec: [axLen, 0, 0], label: `PC1 — ${(data.pca_variance[0]*100).toFixed(1)}%` },
+    { vec: [0, axLen, 0], label: `PC2 — ${(data.pca_variance[1]*100).toFixed(1)}%` },
+    { vec: [0, 0, axLen], label: `PC3 — ${(data.pca_variance[2]*100).toFixed(1)}%` },
   ];
-  ctx.lineWidth = 1;
-  for (const { vec, label, col } of axDefs) {
+  ctx.lineWidth = 1.2;
+  for (const { vec, label } of axDefs) {
     const [ex, ey] = rot3D(...vec);
     const sx = cx + ex*scale, sy = cy - ey*scale;
-    ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
-    ctx.fillStyle = '#bbb'; ctx.font = '11px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText(label, sx + (sx-cx)*0.15, sy + (sy-cy)*0.15 + 4);
+    // Axis line
+    ctx.strokeStyle = '#d4d4d4';
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
+    // Label beyond tip
+    const lx = cx + ex*scale*1.18, ly = cy - ey*scale*1.18;
+    ctx.fillStyle = '#aaa'; ctx.font = 'bold 13px system-ui';
+    ctx.textAlign = ex < -0.05 ? 'right' : ex > 0.05 ? 'left' : 'center';
+    ctx.textBaseline = ey > 0.05 ? 'bottom' : ey < -0.05 ? 'top' : 'middle';
+    ctx.fillText(label, lx, ly);
   }
+  ctx.textBaseline = 'alphabetic';
 
   // ── Density ellipses ──
   if (data.density_3d) {
