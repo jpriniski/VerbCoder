@@ -123,16 +123,19 @@ nav a.active { background: #eef2ff; color: #4a7eff; font-weight: 600; }
   max-width: 1400px;
   margin: 14px auto 40px;
   padding: 0 20px;
-  overflow-x: auto;
+}
+
+.table-scroll {
+  overflow: auto;
+  max-height: calc(100vh - 130px);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,.07);
   font-size: 13.5px;
 }
 
@@ -151,7 +154,7 @@ thead th {
   user-select: none;
   white-space: nowrap;
   position: sticky;
-  top: 57px;
+  top: 0;
   z-index: 10;
 }
 thead th:hover { color: #444; background: #f4f4f4; }
@@ -349,11 +352,13 @@ td.post-cell {
     <div class="spinner"></div>
     Running Dawid-Skene…
   </div>
-  <table id="main-table" style="display:none">
-    <thead id="thead"></thead>
-    <tbody id="tbody"></tbody>
-  </table>
-  <div class="state-msg" id="empty-msg" style="display:none">No verbs match your filter.</div>
+  <div class="table-scroll" id="table-scroll" style="display:none">
+    <table id="main-table">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="state-msg" id="empty-msg" style="display:none">No verbs match your filter.</div>
+  </div>
 </div>
 
 <script>
@@ -403,7 +408,7 @@ async function loadData() {
   render();
 
   document.getElementById('loading').style.display = 'none';
-  document.getElementById('main-table').style.display = '';
+  document.getElementById('table-scroll').style.display = '';
 }
 
 // ── Build header ──────────────────────────────────────────────────────────────
