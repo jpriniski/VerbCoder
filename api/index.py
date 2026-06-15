@@ -4,13 +4,16 @@ import os
 import random
 from datetime import datetime
 from pathlib import Path
+from collections import defaultdict
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import numpy as np
 
 app = Flask(__name__, template_folder='../templates')
 
 BASE_DIR = Path(__file__).parent.parent  # project root
 VERBS_FILE = BASE_DIR / "verb_framing_keywords.csv"
+RELIABILITY_FILE = BASE_DIR / "reliability_verbs.txt"
 
 
 def get_db():
@@ -29,11 +32,25 @@ def init_db():
                     category_label TEXT NOT NULL,
                     subcluster_label TEXT NOT NULL,
                     response_time_ms BIGINT,
-                    timestamp TIMESTAMPTZ DEFAULT NOW()
+                    timestamp TIMESTAMPTZ DEFAULT NOW(),
+                    pass_num INT NOT NULL DEFAULT 1
                 )
+            """)
+            cur.execute("""
+                ALTER TABLE responses
+                ADD COLUMN IF NOT EXISTS pass_num INT NOT NULL DEFAULT 1
             """)
     conn.close()
 
+
+def _load_reliability_verbs():
+    if not RELIABILITY_FILE.exists():
+        return set()
+    with open(RELIABILITY_FILE) as f:
+        return {line.strip() for line in f if line.strip()}
+
+
+RELIABILITY_VERBS = _load_reliability_verbs()
 
 init_db()
 
@@ -65,15 +82,16 @@ def load_options():
     return categories, cat_subs
 
 
-def get_user_done(username):
+def get_user_submissions(username):
+    """Returns {verb: submission_count} for this user."""
     conn = get_db()
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT verb FROM responses WHERE username = %s",
+                "SELECT verb, COUNT(*) FROM responses WHERE username = %s GROUP BY verb",
                 (username,)
             )
-            return {row[0] for row in cur.fetchall()}
+            return {row[0]: row[1] for row in cur.fetchall()}
     finally:
         conn.close()
 
@@ -86,10 +104,11 @@ def index():
 @app.route("/api/options")
 def options():
     categories, cat_subs = load_options()
+    total = len(load_verbs()) + len(RELIABILITY_VERBS)
     return jsonify({
         "categories": categories,
         "category_subclusters": cat_subs,
-        "total": len(load_verbs()),
+        "total": total,
     })
 
 
@@ -100,13 +119,23 @@ def next_verb():
         return jsonify({"error": "No username"}), 400
 
     verbs = load_verbs()
-    done = get_user_done(username)
-    remaining = [v for v in verbs if v not in done]
+    submissions = get_user_submissions(username)
+    total = len(verbs) + len(RELIABILITY_VERBS)
+    done_count = sum(submissions.values())
 
-    if not remaining:
-        return jsonify({"complete": True, "done": len(done), "total": len(verbs)})
+    # Phase 1: any verb not yet seen (pass 1)
+    phase1_remaining = [v for v in verbs if submissions.get(v, 0) == 0]
+    if phase1_remaining:
+        verb = random.choice(phase1_remaining)
+        return jsonify({"verb": verb, "done": done_count, "total": total, "is_reliability": False})
 
-    return jsonify({"verb": random.choice(remaining), "done": len(done), "total": len(verbs)})
+    # Phase 2: reliability verbs seen exactly once (pass 2)
+    phase2_remaining = [v for v in RELIABILITY_VERBS if submissions.get(v, 0) == 1]
+    if phase2_remaining:
+        verb = random.choice(phase2_remaining)
+        return jsonify({"verb": verb, "done": done_count, "total": total, "is_reliability": True})
+
+    return jsonify({"complete": True, "done": done_count, "total": total})
 
 
 @app.route("/api/submit", methods=["POST"])
@@ -121,25 +150,133 @@ def submit():
     if not all([username, verb, category, subcluster]):
         return jsonify({"error": "Missing fields"}), 400
 
+    max_passes = 2 if verb in RELIABILITY_VERBS else 1
+
     conn = get_db()
     try:
         with conn:
             with conn.cursor() as cur:
-                # Skip if already submitted
                 cur.execute(
-                    "SELECT 1 FROM responses WHERE username = %s AND verb = %s",
+                    "SELECT COUNT(*) FROM responses WHERE username = %s AND verb = %s",
                     (username, verb)
                 )
-                if cur.fetchone():
+                existing = cur.fetchone()[0]
+
+                if existing >= max_passes:
                     return jsonify({"ok": True, "skipped": True})
 
+                pass_num = existing + 1
                 cur.execute(
                     """INSERT INTO responses
-                       (username, verb, category_label, subcluster_label, response_time_ms)
-                       VALUES (%s, %s, %s, %s, %s)""",
-                    (username, verb, category, subcluster, response_time_ms)
+                       (username, verb, category_label, subcluster_label, response_time_ms, pass_num)
+                       VALUES (%s, %s, %s, %s, %s, %s)""",
+                    (username, verb, category, subcluster, response_time_ms, pass_num)
                 )
     finally:
         conn.close()
 
     return jsonify({"ok": True})
+
+
+# ── Dawid-Skene ───────────────────────────────────────────────────────────────
+
+def _dawid_skene(annotations, K, n_iter=100, tol=1e-6):
+    N, R = annotations.shape
+    p = np.ones(K) / K
+    pi = np.zeros((R, K, K))
+    for r in range(R):
+        pi[r] = np.eye(K) * 0.7 + np.ones((K, K)) * 0.3 / K
+
+    T = np.zeros((N, K))
+    prev_ll = -np.inf
+
+    for _ in range(n_iter):
+        log_T = np.tile(np.log(p + 1e-300), (N, 1))
+        for r in range(R):
+            log_pi_r = np.log(pi[r] + 1e-300)
+            for i in range(N):
+                obs = annotations[i, r]
+                if obs >= 0:
+                    log_T[i] += log_pi_r[:, obs]
+
+        log_T -= log_T.max(axis=1, keepdims=True)
+        T = np.exp(log_T)
+        T /= T.sum(axis=1, keepdims=True)
+
+        p = T.mean(axis=0)
+        p /= p.sum()
+
+        pi = np.zeros((R, K, K))
+        for r in range(R):
+            for i in range(N):
+                obs = annotations[i, r]
+                if obs >= 0:
+                    pi[r, :, obs] += T[i]
+        row_sums = pi.sum(axis=2, keepdims=True)
+        pi /= np.where(row_sums == 0, 1, row_sums)
+
+        ll = np.sum(np.log(np.maximum(T.max(axis=1), 1e-300)))
+        if abs(ll - prev_ll) < tol:
+            break
+        prev_ll = ll
+
+    return T, p, pi
+
+
+@app.route("/analysis")
+def analysis_page():
+    return render_template("analysis.html")
+
+
+@app.route("/api/ds-results")
+def ds_results():
+    rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
+
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                "SELECT username, verb, category_label, subcluster_label "
+                "FROM responses WHERE username = ANY(%s)",
+                (rater_filter,)
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    if not rows:
+        return jsonify({"verbs": [], "categories": []})
+
+    verb_data = defaultdict(dict)
+    for r in rows:
+        verb_data[r["verb"]][r["username"]] = r["category_label"]
+
+    cats = sorted(set(r["category_label"] for r in rows))
+    cat_idx = {c: i for i, c in enumerate(cats)}
+    verbs = sorted(verb_data.keys())
+    K = len(cats)
+    R = len(rater_filter)
+    rater_idx = {r: i for i, r in enumerate(rater_filter)}
+
+    N = len(verbs)
+    annotations = np.full((N, R), -1, dtype=int)
+    for i, verb in enumerate(verbs):
+        for rater, cat in verb_data[verb].items():
+            if rater in rater_idx:
+                annotations[i, rater_idx[rater]] = cat_idx[cat]
+
+    T, _p, _pi = _dawid_skene(annotations, K)
+    predicted = np.argmax(T, axis=1)
+    confidence = T.max(axis=1)
+
+    result = []
+    for i, verb in enumerate(verbs):
+        result.append({
+            "verb": verb,
+            "ds_label": cats[int(predicted[i])],
+            "confidence": round(float(confidence[i]), 4),
+            "posteriors": {cats[k]: round(float(T[i, k]), 4) for k in range(K)},
+            "n_raters": sum(1 for r in rater_filter if r in verb_data[verb]),
+        })
+
+    return jsonify({"verbs": result, "categories": cats})

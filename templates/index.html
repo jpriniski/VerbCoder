@@ -216,7 +216,10 @@
 
     <!-- Labeling UI -->
     <div id="ui-label" style="display:none">
-      <div class="eyebrow">Rate this verb</div>
+      <div class="eyebrow" id="eyebrow-text">Rate this verb</div>
+      <div id="reliability-banner" style="display:none; font-size:12px; font-weight:600; color:#7D3C98; background:#f2eaf8; border-radius:7px; padding:7px 14px; margin-bottom:10px; letter-spacing:.02em;">
+        Reliability check — you've seen this verb before. Rate it again independently.
+      </div>
       <div style="font-size:13px; color:#888; margin-bottom:14px;">Imagine a subject like <strong>AI</strong>, <strong>ChatGPT</strong>, <strong>LLMs</strong>, etc.</div>
       <div class="verb" id="verb-text">—</div>
 
@@ -370,6 +373,11 @@ async function fetchNext() {
   subPlaceholder.style.display = '';
   submitBtn.disabled = true;
   errMsg.textContent = '';
+
+  const isReliability = !!d.is_reliability;
+  $('eyebrow-text').textContent = isReliability ? 'Rate this verb again' : 'Rate this verb';
+  $('reliability-banner').style.display = isReliability ? '' : 'none';
+
   show('label');
 }
 

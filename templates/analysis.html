@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DS Analysis — Verb Framing</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f0f2f5;
+  color: #222;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  background: #fff;
+  border-bottom: 1px solid #e4e4e4;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+header h1 { font-size: 17px; font-weight: 700; letter-spacing: -.3px; white-space: nowrap; }
+nav { display: flex; gap: 4px; }
+nav a {
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 7px;
+  transition: background .12s, color .12s;
+}
+nav a:hover { background: #f4f4f4; color: #333; }
+nav a.active { background: #eef2ff; color: #4a7eff; font-weight: 600; }
+
+/* ── Controls ── */
+.controls {
+  max-width: 1400px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 300px;
+}
+.search-wrap svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+}
+.search-wrap input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13.5px;
+  transition: border-color .15s;
+}
+.search-wrap input:focus { outline: none; border-color: #4a7eff; }
+
+.cat-filter {
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.cat-filter:focus { outline: none; border-color: #4a7eff; }
+
+.view-toggle {
+  display: flex;
+  background: #ebebeb;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+.view-toggle button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: #777;
+  transition: background .12s, color .12s;
+}
+.view-toggle button.active {
+  background: #fff;
+  color: #222;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+}
+
+.summary {
+  margin-left: auto;
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* ── Table container ── */
+.table-wrap {
+  max-width: 1400px;
+  margin: 14px auto 40px;
+  padding: 0 20px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  font-size: 13.5px;
+}
+
+/* ── Headers ── */
+thead th {
+  background: #fafafa;
+  border-bottom: 1.5px solid #ebebeb;
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #888;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  position: sticky;
+  top: 57px;
+  z-index: 10;
+}
+thead th:hover { color: #444; background: #f4f4f4; }
+thead th.sorted { color: #4a7eff; }
+thead th .sort-arrow { margin-left: 4px; opacity: .5; font-size: 10px; }
+thead th.sorted .sort-arrow { opacity: 1; }
+
+/* Category header chips */
+thead th.cat-header {
+  min-width: 72px;
+  text-align: center;
+}
+thead th.cat-header .cat-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ── Rows ── */
+tbody tr {
+  border-bottom: 1px solid #f2f2f2;
+  transition: background .08s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #fafbff; }
+
+td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+/* Verb cell */
+td.verb-cell {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111;
+  white-space: nowrap;
+}
+
+/* DS Label pill */
+td.label-cell { white-space: nowrap; }
+.label-pill {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  transition: opacity .2s;
+}
+
+/* Confidence cell */
+td.conf-cell { white-space: nowrap; min-width: 90px; }
+.conf-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.conf-bar-bg {
+  flex: 1;
+  height: 5px;
+  background: #ebebeb;
+  border-radius: 3px;
+  min-width: 50px;
+}
+.conf-bar-fill {
+  height: 5px;
+  border-radius: 3px;
+  background: #4a7eff;
+  transition: width .3s;
+}
+.conf-pct {
+  font-size: 12px;
+  color: #777;
+  width: 34px;
+  text-align: right;
+}
+
+/* Category posterior cells */
+td.post-cell {
+  text-align: center;
+  padding: 0;
+  position: relative;
+  min-width: 72px;
+}
+.post-bg {
+  position: absolute;
+  inset: 2px;
+  border-radius: 4px;
+  transition: opacity .2s;
+}
+.post-val {
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  padding: 10px 4px;
+  color: #555;
+  font-variant-numeric: tabular-nums;
+}
+/* In heatmap mode, hide numbers and make cell fully fill */
+.heatmap .post-val { color: transparent; }
+.heatmap .post-bg { inset: 1px; }
+
+/* n_raters badge */
+.raters-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ebebeb;
+  font-size: 11px;
+  font-weight: 600;
+  color: #777;
+}
+
+/* ── Loading / empty ── */
+.state-msg {
+  text-align: center;
+  padding: 80px 20px;
+  color: #aaa;
+  font-size: 14px;
+}
+.state-msg .spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e2e2e2;
+  border-top-color: #4a7eff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Confidence legend ── */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #aaa;
+  margin-left: 4px;
+}
+.legend-grad {
+  width: 80px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(74,126,255,0.1), rgba(74,126,255,1));
+  border: 1px solid #ddd;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Verb Framing</h1>
+  <nav>
+    <a href="/">Labeler</a>
+    <a href="/analysis" class="active">DS Analysis</a>
+  </nav>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input id="search" type="text" placeholder="Search verbs…">
+  </div>
+
+  <select class="cat-filter" id="cat-filter">
+    <option value="">All categories</option>
+  </select>
+
+  <div class="view-toggle">
+    <button id="btn-numbers" class="active">Numbers</button>
+    <button id="btn-heatmap">Heatmap</button>
+  </div>
+
+  <div class="legend" id="conf-legend">
+    <span>Confidence:</span>
+    <div class="legend-grad"></div>
+    <span>low → high</span>
+  </div>
+
+  <div class="summary" id="summary">—</div>
+</div>
+
+<div class="table-wrap">
+  <div class="state-msg" id="loading">
+    <div class="spinner"></div>
+    Running Dawid-Skene…
+  </div>
+  <table id="main-table" style="display:none">
+    <thead id="thead"></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="state-msg" id="empty-msg" style="display:none">No verbs match your filter.</div>
+</div>
+
+<script>
+// ── Category colors (match labeler) ──────────────────────────────────────────
+const CAT_COLORS = {
+  'Anthropomorphic':   '#C0392B',
+  'Mechanistic':       '#2C5F8A',
+  'Labor Displacement':'#7D3C98',
+  'Threat / Risk':     '#E67E22',
+  'Transformation':    '#1A7A4A',
+  'Governance':        '#2E86AB',
+  'Epistemic Tool':    '#5D6D7E',
+};
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let allData = [];
+let categories = [];
+let sortCol = 'confidence';
+let sortDir = -1;   // -1 = desc, 1 = asc
+let viewMode = 'numbers';  // 'numbers' | 'heatmap'
+let searchQ = '';
+let catQ = '';
+
+// ── Fetch data ────────────────────────────────────────────────────────────────
+async function loadData() {
+  const res = await fetch('/api/ds-results');
+  const json = await res.json();
+  allData = json.verbs || [];
+  categories = json.categories || [];
+
+  // Populate filter
+  const sel = document.getElementById('cat-filter');
+  for (const c of categories) {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  }
+
+  buildHeader();
+  render();
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('main-table').style.display = '';
+}
+
+// ── Build header ──────────────────────────────────────────────────────────────
+function buildHeader() {
+  const cols = [
+    { key: 'verb',       label: 'Verb',     cls: '' },
+    { key: 'ds_label',   label: 'DS Label', cls: '' },
+    { key: 'confidence', label: 'Conf',     cls: '' },
+    { key: 'n_raters',   label: 'N',        cls: '' },
+    ...categories.map(c => ({ key: `p_${c}`, label: c, cls: 'cat-header', cat: c })),
+  ];
+
+  const tr = document.createElement('tr');
+  for (const col of cols) {
+    const th = document.createElement('th');
+    th.dataset.key = col.key;
+    th.className = col.cls || '';
+    if (col.cat) {
+      const color = CAT_COLORS[col.cat] || '#888';
+      th.innerHTML = `<span class="cat-dot" style="background:${color}"></span>${abbrev(col.label)}<span class="sort-arrow">↕</span>`;
+    } else {
+      th.innerHTML = `${col.label}<span class="sort-arrow">↕</span>`;
+    }
+    th.addEventListener('click', () => toggleSort(col.key));
+    tr.appendChild(th);
+  }
+  document.getElementById('thead').innerHTML = '';
+  document.getElementById('thead').appendChild(tr);
+  updateSortIndicators();
+}
+
+function abbrev(cat) {
+  const map = {
+    'Anthropomorphic': 'Anthro',
+    'Mechanistic': 'Mech',
+    'Labor Displacement': 'Labor',
+    'Threat / Risk': 'Threat',
+    'Transformation': 'Transf',
+    'Governance': 'Gov',
+    'Epistemic Tool': 'Epist',
+  };
+  return map[cat] || cat;
+}
+
+// ── Sorting ───────────────────────────────────────────────────────────────────
+function toggleSort(key) {
+  if (sortCol === key) {
+    sortDir *= -1;
+  } else {
+    sortCol = key;
+    sortDir = key === 'verb' || key === 'ds_label' ? 1 : -1;
+  }
+  updateSortIndicators();
+  render();
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll('thead th').forEach(th => {
+    const key = th.dataset.key;
+    th.classList.toggle('sorted', key === sortCol);
+    const arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = key === sortCol ? (sortDir === 1 ? '↑' : '↓') : '↕';
+  });
+}
+
+function getValue(row, key) {
+  if (key === 'verb') return row.verb;
+  if (key === 'ds_label') return row.ds_label;
+  if (key === 'confidence') return row.confidence;
+  if (key === 'n_raters') return row.n_raters;
+  if (key.startsWith('p_')) return row.posteriors[key.slice(2)] ?? 0;
+  return 0;
+}
+
+function sortedFiltered() {
+  let rows = allData.filter(r => {
+    if (searchQ && !r.verb.toLowerCase().includes(searchQ)) return false;
+    if (catQ && r.ds_label !== catQ) return false;
+    return true;
+  });
+  rows.sort((a, b) => {
+    const av = getValue(a, sortCol);
+    const bv = getValue(b, sortCol);
+    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+    return sortDir * (bv - av);
+  });
+  return rows;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const rows = sortedFiltered();
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  const isHeat = viewMode === 'heatmap';
+  document.getElementById('main-table').classList.toggle('heatmap', isHeat);
+
+  for (const row of rows) {
+    const tr = document.createElement('tr');
+
+    // Verb
+    const tdVerb = document.createElement('td');
+    tdVerb.className = 'verb-cell';
+    tdVerb.textContent = row.verb;
+    tr.appendChild(tdVerb);
+
+    // DS Label pill (opacity = confidence in heatmap mode)
+    const tdLabel = document.createElement('td');
+    tdLabel.className = 'label-cell';
+    const pill = document.createElement('span');
+    pill.className = 'label-pill';
+    const labelColor = CAT_COLORS[row.ds_label] || '#888';
+    const pillOpacity = isHeat ? row.confidence : 1;
+    pill.style.background = labelColor;
+    pill.style.opacity = pillOpacity;
+    pill.textContent = row.ds_label;
+    tdLabel.appendChild(pill);
+    tr.appendChild(tdLabel);
+
+    // Confidence bar
+    const tdConf = document.createElement('td');
+    tdConf.className = 'conf-cell';
+    const pct = Math.round(row.confidence * 100);
+    tdConf.innerHTML = `
+      <div class="conf-wrap">
+        <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${pct}%"></div></div>
+        <span class="conf-pct">${pct}%</span>
+      </div>`;
+    tr.appendChild(tdConf);
+
+    // N raters badge
+    const tdN = document.createElement('td');
+    tdN.style.textAlign = 'center';
+    tdN.innerHTML = `<span class="raters-badge">${row.n_raters}</span>`;
+    tr.appendChild(tdN);
+
+    // Posterior cells
+    for (const cat of categories) {
+      const p = row.posteriors[cat] ?? 0;
+      const color = CAT_COLORS[cat] || '#888';
+      const rgb = hexToRgb(color);
+      const td = document.createElement('td');
+      td.className = 'post-cell';
+      td.innerHTML = `
+        <div class="post-bg" style="background:rgba(${rgb},${p.toFixed(3)})"></div>
+        <div class="post-val">${(p * 100).toFixed(0)}%</div>`;
+      tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  }
+
+  const emptyMsg = document.getElementById('empty-msg');
+  emptyMsg.style.display = rows.length === 0 ? '' : 'none';
+
+  const total = allData.length;
+  const shown = rows.length;
+  document.getElementById('summary').textContent =
+    shown === total ? `${total} verbs` : `${shown} of ${total} verbs`;
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', e => {
+  searchQ = e.target.value.trim().toLowerCase();
+  render();
+});
+
+document.getElementById('cat-filter').addEventListener('change', e => {
+  catQ = e.target.value;
+  render();
+});
+
+document.getElementById('btn-numbers').addEventListener('click', () => {
+  viewMode = 'numbers';
+  document.getElementById('btn-numbers').classList.add('active');
+  document.getElementById('btn-heatmap').classList.remove('active');
+  render();
+});
+
+document.getElementById('btn-heatmap').addEventListener('click', () => {
+  viewMode = 'heatmap';
+  document.getElementById('btn-heatmap').classList.add('active');
+  document.getElementById('btn-numbers').classList.remove('active');
+  render();
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadData().catch(err => {
+  document.getElementById('loading').innerHTML =
+    `<p style="color:#e74c3c">Failed to load: ${err.message}</p>`;
+});
+</script>
+</body>
+</html>
