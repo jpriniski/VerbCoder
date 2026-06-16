@@ -172,6 +172,32 @@ nav a.active { background: var(--badge-bg); color: var(--badge-col); font-weight
   box-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
 
+/* ── View preset buttons ── */
+.view-btns {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  justify-content: center; margin-top: 8px;
+}
+.view-btn {
+  font-size: 10.5px; font-weight: 600;
+  font-family: 'Menlo','Courier New',monospace;
+  padding: 4px 9px; border: 1.5px solid var(--border2);
+  background: var(--toggle-bg); color: var(--subtext);
+  border-radius: 6px; cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.view-btn:hover { background: var(--toggle-act); border-color: var(--subtext); color: var(--text); }
+.view-btn.snap-active { background: var(--badge-bg); border-color: var(--badge-col); color: var(--badge-col); }
+
+/* ── Download button ── */
+.dl-btn {
+  background: none; border: 1.5px solid var(--border2);
+  border-radius: 7px; padding: 4px 8px; font-size: 14px;
+  cursor: pointer; color: var(--subtext); line-height: 1;
+  transition: background .12s, border-color .12s;
+  flex-shrink: 0;
+}
+.dl-btn:hover { background: var(--toggle-bg); border-color: var(--subtext); }
+
 /* ── 3D canvas ── */
 #pca-canvas {
   display: block; width: 100%; cursor: grab; border-radius: 8px;
@@ -229,6 +255,7 @@ nav a.active { background: var(--badge-bg); color: var(--badge-col); font-weight
             <button id="btn-2d" class="active">2D</button>
             <button id="btn-3d">3D</button>
           </div>
+          <button class="dl-btn" onclick="downloadPCA()" title="Download as PNG">↓</button>
         </div>
         <div class="legend" id="legend"></div>
       </div>
@@ -237,24 +264,37 @@ nav a.active { background: var(--badge-bg); color: var(--badge-col); font-weight
       <!-- 3D canvas view -->
       <div id="pca-3d-wrap" style="display:none">
         <canvas id="pca-canvas" height="460"></canvas>
-        <p class="drag-hint">Drag to rotate</p>
+        <div class="view-btns" id="view-btns">
+          <button class="view-btn" data-rx="0"      data-ry="0"      title="Look along Z — see PC1 vs PC2">(0,0,1)</button>
+          <button class="view-btn" data-rx="0"      data-ry="-1.5708" title="Look along X — see PC2 vs PC3">(1,0,0)</button>
+          <button class="view-btn" data-rx="1.5708" data-ry="0"      title="Look along Y — see PC1 vs PC3">(0,1,0)</button>
+          <button class="view-btn" data-rx="1.5708" data-ry="-0.7854" title="Look along X+Y diagonal">(1,1,0)</button>
+          <button class="view-btn snap-active" data-rx="0.7854" data-ry="-0.6155" title="Isometric — look along X+Y+Z">(1,1,1)</button>
+        </div>
+        <p class="drag-hint">Drag to rotate · click axis label to snap</p>
       </div>
     </div>
 
     <!-- Confidence strip -->
     <div class="chart-panel">
-      <div class="panel-head">
-        <h2>Confidence by Category</h2>
-        <p class="sub">DS confidence distribution per inferred label. Each dot = one verb. Tick = median.</p>
+      <div class="panel-head" style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1;min-width:0">
+          <h2>Confidence by Category</h2>
+          <p class="sub">DS confidence distribution per inferred label. Each dot = one verb. Tick = median.</p>
+        </div>
+        <button class="dl-btn" onclick="downloadSVGEl('conf-svg','confidence.png')" title="Download as PNG">↓</button>
       </div>
       <div class="svg-wrap"><svg id="conf-svg"></svg></div>
     </div>
 
     <!-- Response time vs confidence -->
     <div class="chart-panel">
-      <div class="panel-head">
-        <h2>Response Time vs. Confidence</h2>
-        <p class="sub">Does labeling speed predict DS confidence? Median response time per verb (log scale).</p>
+      <div class="panel-head" style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1;min-width:0">
+          <h2>Response Time vs. Confidence</h2>
+          <p class="sub">Does labeling speed predict DS confidence? Median response time per verb (log scale).</p>
+        </div>
+        <button class="dl-btn" onclick="downloadSVGEl('rt-svg','response_time.png')" title="Download as PNG">↓</button>
       </div>
       <div class="svg-wrap"><svg id="rt-svg"></svg></div>
     </div>
@@ -601,14 +641,19 @@ document.getElementById('btn-3d').addEventListener('click', () => {
 });
 
 // ── 3D rotation state ─────────────────────────────────────────────────────────
-const rot3 = { x: 0.38, y: -0.42 };
+const rot3 = { x: 0.7854, y: -0.6155 }; // matches (1,1,1) preset
 const drag3 = { on: false, lx: 0, ly: 0 };
+
+function clearSnapActive() {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('snap-active'));
+}
 
 function setupCanvas3D() {
   const canvas = document.getElementById('pca-canvas');
   canvas.addEventListener('mousedown',  e => { drag3.on = true; drag3.lx = e.clientX; drag3.ly = e.clientY; });
   canvas.addEventListener('mousemove',  e => {
     if (!drag3.on) { canvas3DTooltip(e); return; }
+    clearSnapActive();
     rot3.y += (e.clientX - drag3.lx) * 0.007;
     rot3.x -= (e.clientY - drag3.ly) * 0.007;
     rot3.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, rot3.x));
@@ -805,12 +850,79 @@ function canvas3DTooltip(e) {
   best ? tip(e, best) : hideTip();
 }
 
+// ── Orientation snap ──────────────────────────────────────────────────────────
+let snapAnim = null;
+function snapTo(tx, ty, dur = 380) {
+  if (snapAnim) cancelAnimationFrame(snapAnim);
+  const sx = rot3.x, sy = rot3.y;
+  const t0 = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - t0) / dur);
+    const e = 1 - (1 - t) ** 3; // ease-out cubic
+    rot3.x = sx + (tx - sx) * e;
+    rot3.y = sy + (ty - sy) * e;
+    draw3D();
+    if (t < 1) snapAnim = requestAnimationFrame(step);
+  }
+  snapAnim = requestAnimationFrame(step);
+}
+
+function setupViewBtns() {
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      clearSnapActive();
+      btn.classList.add('snap-active');
+      snapTo(parseFloat(btn.dataset.rx), parseFloat(btn.dataset.ry));
+    });
+  });
+}
+
+// ── PNG download ──────────────────────────────────────────────────────────────
+function downloadSVGEl(svgId, filename) {
+  const svgEl = document.getElementById(svgId);
+  const vb = svgEl.viewBox.baseVal;
+  const scale = 2;
+  const W = vb.width * scale, H = vb.height * scale;
+  const svgStr = new XMLSerializer().serializeToString(svgEl);
+  const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx2 = c.getContext('2d');
+    ctx2.fillStyle = getComputedStyle(document.documentElement)
+      .getPropertyValue('--card').trim() || '#ffffff';
+    ctx2.fillRect(0, 0, W, H);
+    ctx2.drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.href = c.toDataURL('image/png');
+    a.download = filename;
+    a.click();
+  };
+  img.src = url;
+}
+
+function downloadPCA() {
+  if (viewMode3 === '3d') {
+    const canvas = document.getElementById('pca-canvas');
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'pca_3d.png';
+    a.click();
+  } else {
+    downloadSVGEl('pca-svg', 'pca_2d.png');
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 load().catch(err => {
   document.getElementById('loading').innerHTML =
     `<p style="color:#e74c3c">Failed to load: ${err.message}</p>`;
 });
 setupCanvas3D();
+setupViewBtns();
 </script>
 </body>
 </html>
