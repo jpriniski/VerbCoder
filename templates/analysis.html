@@ -297,9 +297,16 @@ td.post-cell {
   text-transform: uppercase;
   letter-spacing: .07em;
   color: #888;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
-.rel-section { flex: 1; min-width: 200px; }
+.rel-desc {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.55;
+  margin-bottom: 12px;
+  max-width: 320px;
+}
+.rel-section { flex: 1; min-width: 220px; }
 
 /* accuracy bars */
 .acc-row {
@@ -494,16 +501,19 @@ td.post-cell {
 
     <div class="rel-section">
       <h3>DS Accuracy per Rater</h3>
+      <p class="rel-desc">The Dawid-Skene model estimates how accurate each rater is by learning their confusion matrices across all verbs. This score is the probability that a rater's label matches the inferred true label, weighted by how common each category is. Higher = the model trusts this rater more. Note: with only 3 raters, raters who are frequently in the minority will score lower even when their disagreement is legitimate.</p>
       <div id="acc-bars"></div>
     </div>
 
     <div class="rel-section">
       <h3>Pairwise Agreement</h3>
+      <p class="rel-desc">For each pair of raters, the percentage of verbs where both chose the same category label — computed directly from raw labels, ignoring the DS model. Higher agreement means the two raters are applying categories more consistently with each other. N is the number of verbs both raters labeled.</p>
       <table class="pair-table" id="pair-table"></table>
     </div>
 
     <div class="rel-section">
       <h3>Confusion Matrix</h3>
+      <p class="rel-desc">Rows are the DS-inferred true category; columns are what this rater actually labeled. The diagonal (blue) shows how often the rater agreed with the DS label for that category. Off-diagonal cells (red) show which categories they confused — e.g. a value in row "Gov", col "Epist" means the rater labeled something "Epistemic Tool" when DS inferred it was "Governance." Darker = higher rate of that pattern.</p>
       <div class="rater-tabs" id="rater-tabs"></div>
       <div class="conf-matrix-wrap">
         <table class="conf-matrix" id="conf-matrix"></table>
