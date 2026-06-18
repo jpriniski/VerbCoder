@@ -235,7 +235,7 @@ def charts_page():
 
 @app.route("/api/charts-data")
 def charts_data():
-    rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
+    rater_filter = request.args.getlist("raters") or ["Hunter", "Tatyana", "user1", "user3"]
 
     conn = get_db()
     try:
@@ -360,7 +360,7 @@ def charts_data():
 
 @app.route("/api/ds-results")
 def ds_results():
-    rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
+    rater_filter = request.args.getlist("raters") or ["Hunter", "Tatyana", "user1", "user3"]
 
     conn = get_db()
     try:
