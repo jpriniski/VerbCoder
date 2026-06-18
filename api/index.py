@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import csv
 import os
 import random
@@ -447,3 +447,62 @@ def ds_results():
             "confusion_matrices": confusion_matrices,
         },
     })
+
+
+@app.route("/api/ds-export.csv")
+def ds_export():
+    rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
+
+    conn = get_db()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                "SELECT username, verb, category_label, subcluster_label "
+                "FROM responses WHERE username = ANY(%s)",
+                (rater_filter,)
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    if not rows:
+        return Response("verb,ds_label,confidence,n_raters\n", mimetype="text/csv")
+
+    verb_data = defaultdict(dict)
+    for r in rows:
+        verb_data[r["verb"]][r["username"]] = r["category_label"]
+
+    cats = sorted(set(r["category_label"] for r in rows))
+    cat_idx = {c: i for i, c in enumerate(cats)}
+    verbs = sorted(verb_data.keys())
+    K = len(cats)
+    R = len(rater_filter)
+    rater_idx = {r: i for i, r in enumerate(rater_filter)}
+
+    N = len(verbs)
+    annotations = np.full((N, R), -1, dtype=int)
+    for i, verb in enumerate(verbs):
+        for rater, cat in verb_data[verb].items():
+            if rater in rater_idx:
+                annotations[i, rater_idx[rater]] = cat_idx[cat]
+
+    T, _p, _pi = _dawid_skene(annotations, K)
+    predicted = np.argmax(T, axis=1)
+    confidence = T.max(axis=1)
+
+    import io
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["verb", "ds_label", "confidence", "n_raters"] + [f"p_{c}" for c in cats])
+    for i, verb in enumerate(verbs):
+        writer.writerow(
+            [verb, cats[int(predicted[i])], round(float(confidence[i]), 4),
+             sum(1 for r in rater_filter if r in verb_data[verb])]
+            + [round(float(T[i, k]), 4) for k in range(K)]
+        )
+
+    return Response(
+        buf.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=ds_results.csv"},
+    )
