@@ -235,7 +235,7 @@ def charts_page():
 
 @app.route("/api/charts-data")
 def charts_data():
-    rater_filter = request.args.getlist("raters") or ["Hunter", "Tatyana", "user1", "user3"]
+    rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
 
     conn = get_db()
     try:
@@ -360,7 +360,7 @@ def charts_data():
 
 @app.route("/api/ds-results")
 def ds_results():
-    rater_filter = request.args.getlist("raters") or ["Hunter", "Tatyana", "user1", "user3"]
+    rater_filter = request.args.getlist("raters") or ["Tatyana", "user1", "user3"]
 
     conn = get_db()
     try:
@@ -399,6 +399,34 @@ def ds_results():
     predicted = np.argmax(T, axis=1)
     confidence = T.max(axis=1)
 
+    # Per-rater DS accuracy: weighted mean diagonal of confusion matrix
+    rater_accuracy = {}
+    for ri, r in enumerate(rater_filter):
+        acc = float(sum(_pi[ri, k, k] * _p[k] for k in range(K)))
+        rater_accuracy[r] = round(acc, 4)
+
+    # Pairwise raw agreement between rater pairs
+    pairwise_agreement = {}
+    for i, r1 in enumerate(rater_filter):
+        for j, r2 in enumerate(rater_filter):
+            if i >= j:
+                continue
+            mask = (annotations[:, i] >= 0) & (annotations[:, j] >= 0)
+            if mask.sum() == 0:
+                continue
+            agree = int((annotations[mask, i] == annotations[mask, j]).sum())
+            total = int(mask.sum())
+            pairwise_agreement[f"{r1}|{r2}"] = {
+                "agreement": round(agree / total, 4),
+                "n": total,
+            }
+
+    # Per-rater confusion matrix (rows=true, cols=observed)
+    confusion_matrices = {
+        r: [[round(float(_pi[ri, k, j]), 4) for j in range(K)] for k in range(K)]
+        for ri, r in enumerate(rater_filter)
+    }
+
     result = []
     for i, verb in enumerate(verbs):
         result.append({
@@ -409,4 +437,13 @@ def ds_results():
             "n_raters": sum(1 for r in rater_filter if r in verb_data[verb]),
         })
 
-    return jsonify({"verbs": result, "categories": cats})
+    return jsonify({
+        "verbs": result,
+        "categories": cats,
+        "rater_stats": {
+            "raters": rater_filter,
+            "accuracy": rater_accuracy,
+            "pairwise_agreement": pairwise_agreement,
+            "confusion_matrices": confusion_matrices,
+        },
+    })

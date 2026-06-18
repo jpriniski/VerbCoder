@@ -275,6 +275,147 @@ td.post-cell {
   color: #777;
 }
 
+/* ── Reliability panel ── */
+.reliability-panel {
+  max-width: 1400px;
+  margin: 12px auto 0;
+  padding: 0 20px;
+}
+.reliability-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  padding: 16px 20px;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.reliability-card h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #888;
+  margin-bottom: 12px;
+}
+.rel-section { flex: 1; min-width: 200px; }
+
+/* accuracy bars */
+.acc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.acc-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  width: 64px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.acc-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #ebebeb;
+  border-radius: 4px;
+}
+.acc-bar-fill {
+  height: 8px;
+  border-radius: 4px;
+  background: #4a7eff;
+}
+.acc-pct {
+  font-size: 12px;
+  color: #777;
+  width: 34px;
+  text-align: right;
+}
+
+/* pairwise table */
+.pair-table {
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.pair-table th, .pair-table td {
+  padding: 5px 10px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+}
+.pair-table th {
+  background: #fafafa;
+  font-weight: 700;
+  color: #777;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.pair-table td.pair-label {
+  font-weight: 600;
+  color: #333;
+  text-align: left;
+  background: #fafafa;
+}
+.pair-table td.pair-val {
+  font-variant-numeric: tabular-nums;
+  color: #444;
+}
+.pair-table td.pair-n {
+  color: #aaa;
+  font-size: 11px;
+}
+
+/* confusion matrix */
+.conf-matrix-wrap { overflow-x: auto; }
+.conf-matrix {
+  border-collapse: collapse;
+  font-size: 10.5px;
+  margin-top: 4px;
+}
+.conf-matrix th, .conf-matrix td {
+  padding: 3px 6px;
+  border: 1px solid #f0f0f0;
+  text-align: center;
+}
+.conf-matrix th {
+  background: #fafafa;
+  color: #888;
+  font-weight: 600;
+}
+.conf-matrix td.cm-label {
+  font-weight: 600;
+  color: #555;
+  text-align: left;
+  background: #fafafa;
+  white-space: nowrap;
+}
+.conf-matrix td.cm-val { font-variant-numeric: tabular-nums; }
+
+.rater-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.rater-tab {
+  padding: 4px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+  color: #888;
+  transition: background .1s, color .1s, border-color .1s;
+}
+.rater-tab.active {
+  border-color: #4a7eff;
+  color: #4a7eff;
+  background: #eef2ff;
+}
+
 /* ── Loading / empty ── */
 .state-msg {
   text-align: center;
@@ -348,6 +489,30 @@ td.post-cell {
   <div class="summary" id="summary">—</div>
 </div>
 
+<div class="reliability-panel" id="reliability-panel" style="display:none">
+  <div class="reliability-card">
+
+    <div class="rel-section">
+      <h3>DS Accuracy per Rater</h3>
+      <div id="acc-bars"></div>
+    </div>
+
+    <div class="rel-section">
+      <h3>Pairwise Agreement</h3>
+      <table class="pair-table" id="pair-table"></table>
+    </div>
+
+    <div class="rel-section">
+      <h3>Confusion Matrix</h3>
+      <div class="rater-tabs" id="rater-tabs"></div>
+      <div class="conf-matrix-wrap">
+        <table class="conf-matrix" id="conf-matrix"></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div class="table-wrap">
   <div class="state-msg" id="loading">
     <div class="spinner"></div>
@@ -384,6 +549,8 @@ function hexToRgb(hex) {
 // ── State ────────────────────────────────────────────────────────────────────
 let allData = [];
 let categories = [];
+let raterStats = null;
+let activeRater = null;
 let sortCol = 'confidence';
 let sortDir = -1;   // -1 = desc, 1 = asc
 let viewMode = 'numbers';  // 'numbers' | 'heatmap'
@@ -396,6 +563,7 @@ async function loadData() {
   const json = await res.json();
   allData = json.verbs || [];
   categories = json.categories || [];
+  raterStats = json.rater_stats || null;
 
   // Populate filter
   const sel = document.getElementById('cat-filter');
@@ -408,8 +576,109 @@ async function loadData() {
   buildHeader();
   render();
 
+  if (raterStats) {
+    buildReliabilityPanel(raterStats);
+    document.getElementById('reliability-panel').style.display = '';
+  }
+
   document.getElementById('loading').style.display = 'none';
   document.getElementById('table-scroll').style.display = '';
+}
+
+// ── Reliability panel ─────────────────────────────────────────────────────────
+function buildReliabilityPanel(stats) {
+  // Accuracy bars
+  const barsEl = document.getElementById('acc-bars');
+  barsEl.innerHTML = '';
+  for (const r of stats.raters) {
+    const acc = stats.accuracy[r] ?? 0;
+    const pct = Math.round(acc * 100);
+    const row = document.createElement('div');
+    row.className = 'acc-row';
+    row.innerHTML = `
+      <span class="acc-name" title="${r}">${r}</span>
+      <div class="acc-bar-bg">
+        <div class="acc-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <span class="acc-pct">${pct}%</span>`;
+    barsEl.appendChild(row);
+  }
+
+  // Pairwise agreement table
+  const pairEl = document.getElementById('pair-table');
+  pairEl.innerHTML = '';
+  const thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>Pair</th><th>Agreement</th><th>N verbs</th></tr>';
+  pairEl.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  for (const [key, val] of Object.entries(stats.pairwise_agreement)) {
+    const pct = Math.round(val.agreement * 100);
+    const [r1, r2] = key.split('|');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="pair-label">${r1} × ${r2}</td>
+      <td class="pair-val">${pct}%</td>
+      <td class="pair-n">${val.n}</td>`;
+    tbody.appendChild(tr);
+  }
+  pairEl.appendChild(tbody);
+
+  // Confusion matrix tabs
+  const tabsEl = document.getElementById('rater-tabs');
+  tabsEl.innerHTML = '';
+  for (const r of stats.raters) {
+    const btn = document.createElement('button');
+    btn.className = 'rater-tab';
+    btn.textContent = r;
+    btn.addEventListener('click', () => {
+      activeRater = r;
+      document.querySelectorAll('.rater-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderConfMatrix(r, stats);
+    });
+    tabsEl.appendChild(btn);
+  }
+  // Default to first rater
+  activeRater = stats.raters[0];
+  tabsEl.firstChild.classList.add('active');
+  renderConfMatrix(activeRater, stats);
+}
+
+function renderConfMatrix(rater, stats) {
+  const el = document.getElementById('conf-matrix');
+  el.innerHTML = '';
+  const matrix = stats.confusion_matrices[rater];
+  const cats = categories;
+
+  const abbrevMap = {
+    'Anthropomorphic': 'Anthro', 'Mechanistic': 'Mech',
+    'Labor Displacement': 'Labor', 'Threat / Risk': 'Threat',
+    'Transformation': 'Transf', 'Governance': 'Gov', 'Epistemic Tool': 'Epist',
+  };
+  const ab = c => abbrevMap[c] || c;
+
+  // Header row
+  const thead = document.createElement('thead');
+  const hrow = document.createElement('tr');
+  hrow.innerHTML = '<th>True \\ Obs</th>' + cats.map(c => `<th>${ab(c)}</th>`).join('');
+  thead.appendChild(hrow);
+  el.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (let k = 0; k < cats.length; k++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="cm-label">${ab(cats[k])}</td>` +
+      matrix[k].map((v, j) => {
+        const pct = Math.round(v * 100);
+        const isDiag = k === j;
+        const bg = isDiag
+          ? `rgba(74,126,255,${(v * 0.7).toFixed(3)})`
+          : `rgba(231,76,60,${(v * 0.7).toFixed(3)})`;
+        return `<td class="cm-val" style="background:${bg}">${pct}%</td>`;
+      }).join('');
+    tbody.appendChild(tr);
+  }
+  el.appendChild(tbody);
 }
 
 // ── Build header ──────────────────────────────────────────────────────────────
